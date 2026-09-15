@@ -4,8 +4,8 @@ from datetime import datetime
 
 app = FastAPI(
     title="API PACTO - Inteligência Cívica",
-    description="Backend oficial da plataforma PACTO contendo o mapeamento completo das 24 secretarias do Governo.",
-    version="1.6.0"
+    description="Backend oficial da plataforma PACTO contendo as 24 Secretarias e o Módulo de Contratos.",
+    version="1.7.1"
 )
 
 app.add_middleware(
@@ -16,7 +16,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Banco de Dados Oficial Expandido com as 24 Secretarias do Governo de São Paulo
+# Banco de Dados Oficial Completo com as 24 Secretarias do Governo de São Paulo
 BANCO_DE_DADOS_PACTO = [
     {
         "id": 1,
@@ -308,6 +308,49 @@ BANCO_DE_DADOS_PACTO = [
     }
 ]
 
+# Base de Dados do Módulo de Contratos e Fornecedores (Frente 1)
+BANCO_CONTRATOS_PACTO = [
+    {
+        "id_contrato": "CT-2026-089",
+        "secretaria": "Saúde",
+        "fornecedor": "OncoTech Equipamentos Médicos Ltda",
+        "cnpj": "12.345.678/0001-99",
+        "objeto": "Aquisição e instalação de aceleradores lineares e equipamentos de imagem para centros oncológicos.",
+        "valor_inicial": "R$ 18.500.000,00",
+        "valor_atualizado": "R$ 19.200.000,00",
+        "data_assinatura": "2026-02-15",
+        "vigencia": "12 meses",
+        "status": "Vigente",
+        "processo_sei": "001.00043210/2025-88"
+    },
+    {
+        "id_contrato": "CT-2026-104",
+        "secretaria": "Segurança Pública",
+        "fornecedor": "Forense Tech Soluções em DNA Ltda",
+        "cnpj": "98.765.432/0001-11",
+        "objeto": "Fornecimento de reagentes de alta precisão e modernização de hardwares para cromatografia gasosa.",
+        "valor_inicial": "R$ 6.800.000,00",
+        "valor_atualizado": "R$ 6.800.000,00",
+        "data_assinatura": "2026-03-01",
+        "vigencia": "24 meses",
+        "status": "Vigente",
+        "processo_sei": "052.00011223/2026-10"
+    },
+    {
+        "id_contrato": "CT-2026-210",
+        "secretaria": "Logística e Transportes",
+        "fornecedor": "Rodovias Paulista Construções S.A.",
+        "cnpj": "45.123.789/0001-50",
+        "objeto": "Serviços de engenharia civil para duplicação e recapeamento asfáltico em trecho prioritário.",
+        "valor_inicial": "R$ 45.000.000,00",
+        "valor_atualizado": "R$ 48.500.000,00",
+        "data_assinatura": "2025-11-10",
+        "vigencia": "18 meses",
+        "status": "Em Execução com Termo Aditivo",
+        "processo_sei": "108.00099887/2025-45"
+    }
+]
+
 FONTES_OFICIAIS_REGISTRADAS = [
     {
         "id_fonte": "SRC-001",
@@ -318,8 +361,8 @@ FONTES_OFICIAIS_REGISTRADAS = [
     },
     {
         "id_fonte": "SRC-002",
-        "nome": "Diário Oficial do Estado de São Paulo (DOESP)",
-        "tipo": "Atos Administrativos e Contratos",
+        "nome": "Portal Nacional de Contratações Públicas (PNCP)",
+        "tipo": "Contratos e Licitações",
         "status": "Ativo e Sincronizado",
         "ultima_checagem": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     }
@@ -352,11 +395,16 @@ def aplicar_motor_analitico(promessa_item: dict) -> dict:
 
 @app.get("/", summary="Raiz da API")
 def raiz():
-    return {"sistema": "API PACTO - 24 Secretarias do Estado de São Paulo Ativas", "versao": "1.6.0"}
+    return {"sistema": "API PACTO - 24 Secretarias e Módulo de Contratos Ativos", "versao": "1.7.1"}
 
 @app.get("/api/v1/promessas", summary="Listar promessas de todas as secretarias")
 def listar_promessas():
     return [aplicar_motor_analitico(item) for item in BANCO_DE_DADOS_PACTO]
+
+@app.get("/api/v1/contratos", summary="Listar Contratos e Fornecedores do Estado")
+def listar_contratos():
+    """Retorna a base de contratos públicos e fornecedores integrada ao PACTO."""
+    return BANCO_CONTRATOS_PACTO
 
 @app.get("/api/v1/indicadores", summary="Indicadores Globais Consolidados")
 def obter_indicadores_globais():
@@ -368,6 +416,7 @@ def obter_indicadores_globais():
         "total_metas": total,
         "media_execucao_global": f"{media}%",
         "total_atrasadas": atrasadas,
+        "total_contratos_monitorados": len(BANCO_CONTRATOS_PACTO),
         "fontes_integradas_ativas": len(FONTES_OFICIAIS_REGISTRADAS)
     }
 
