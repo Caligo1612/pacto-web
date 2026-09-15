@@ -5,8 +5,8 @@ from datetime import datetime
 
 app = FastAPI(
     title="API PACTO - Inteligência Cívica",
-    description="Backend oficial da plataforma PACTO com Rastreador do Plano de Governo.",
-    version="2.1.0"
+    description="Backend oficial da plataforma PACTO com Filtro de Obras Estratégicas.",
+    version="2.2.0"
 )
 
 app.add_middleware(
@@ -27,7 +27,7 @@ class IndicadoresGlobaisModel(BaseModel):
     fontes_integradas_ativas: int
 
 # =====================================================================
-# BANCO DE DADOS: 24 SECRETARIAS (Agora com Referência Oficial ao Plano)
+# BANCO DE DADOS: 24 SECRETARIAS (Preservadas com Referência Oficial)
 # =====================================================================
 BANCO_DE_DADOS_PACTO = [
     {
@@ -314,12 +314,16 @@ BANCO_CONTRATOS_PACTO = [
     }
 ]
 
+# =====================================================================
+# BANCO DE OBRAS (Agora com a flag 'estrategica')
+# =====================================================================
 BANCO_OBRAS_PACTO = [
     {
         "id_obra": "OBRA-2026-01", "secretaria": "Saúde", "nome": "Centro de Atendimento Oncológico - Unidade Capital",
         "descricao": "Construção de infraestrutura hospitalar especializada em oncologia com 12.000m².",
         "localizacao": "São Paulo - SP (Zona Sul)", "latitude": -23.588056, "longitude": -46.632222,
         "valor_obra": "R$ 22.000.000,00", "data_inicio": "2026-01-10", "previsao_termino": "2026-12-20", "percentual_execucao": "45%", "status": "Em Andamento",
+        "estrategica": False,
         "historico": ["01/2026 - Início da fundação e terraplanagem", "05/2026 - Conclusão da estrutura de concreto", "08/2026 - Instalação de redes hidráulicas e elétricas"]
     },
     {
@@ -327,7 +331,16 @@ BANCO_OBRAS_PACTO = [
         "descricao": "Serviços de engenharia para duplicação de pista, pavimentação e sinalização viária.",
         "localizacao": "Região de Sorocaba - SP", "latitude": -23.501667, "longitude": -47.458333,
         "valor_obra": "R$ 48.500.000,00", "data_inicio": "2025-11-15", "previsao_termino": "2026-10-30", "percentual_execucao": "35%", "status": "Em Andamento com Atenção",
+        "estrategica": False,
         "historico": ["11/2025 - Ordem de serviço emitida", "03/2026 - Executados 15km de pavimentação", "07/2026 - Retificação ambiental em trecho de manancial"]
+    },
+    {
+        "id_obra": "OBRA-2026-03", "secretaria": "Transportes Metropolitanos", "nome": "Trem Intercidades (Eixo SP-Campinas)",
+        "descricao": "Implantação de transporte ferroviário de passageiros interligando a capital ao interior, conforme Plano de Governo.",
+        "localizacao": "São Paulo - Campinas", "latitude": -23.533333, "longitude": -46.633333,
+        "valor_obra": "R$ 8.500.000.000,00", "data_inicio": "2025-06-01", "previsao_termino": "2029-12-01", "percentual_execucao": "15%", "status": "Em Andamento",
+        "estrategica": True,
+        "historico": ["06/2025 - Assinatura do contrato de PPP", "01/2026 - Início das desapropriações e supressão vegetal"]
     }
 ]
 
@@ -377,7 +390,7 @@ def aplicar_motor_analitico(promessa_item: dict) -> dict:
 
 @app.get("/", summary="Raiz da API")
 def raiz():
-    return {"sistema": "API PACTO - Validações e Tratamento de Erros Ativos", "versao": "2.1.0"}
+    return {"sistema": "API PACTO - Validações e Tratamento de Erros Ativos", "versao": "2.2.0"}
 
 @app.get("/api/v1/promessas", summary="Listar todas as promessas")
 def listar_promessas():

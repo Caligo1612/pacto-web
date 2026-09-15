@@ -9,10 +9,13 @@ export default function Home() {
   const [listaAlertas, setListaAlertas] = useState<any[]>([]);
   const [indicadoresGlobais, setIndicadoresGlobais] = useState<any>(null);
   
-  // Controle de Abas (Metas vs Contratos vs Obras vs Alertas) e Filtros
+  // Controle de Abas e Filtros
   const [abaAtiva, setAbaAtiva] = useState<'metas' | 'contratos' | 'obras' | 'alertas'>('metas');
   const [textoPesquisa, setTextoPesquisa] = useState('');
   const [areaSelecionada, setAreaSelecionada] = useState('Todas');
+  
+  // Estado para o Filtro de Obras Estratégicas (IDEIA 2)
+  const [filtroEstrategica, setFiltroEstrategica] = useState(false);
   
   const [termosAceitos, setTermosAceitos] = useState(false);
   const [caixaMarcada, setCaixaMarcada] = useState(false);
@@ -61,11 +64,13 @@ export default function Home() {
     return combinaTexto && combinaArea;
   });
 
+  // Filtro de Obras (Aprimorado com a IDEIA 2)
   const obrasFiltradas = listaObras.filter((item) => {
     const combinaTexto = item.nome.toLowerCase().includes(textoPesquisa.toLowerCase()) || 
                          item.descricao.toLowerCase().includes(textoPesquisa.toLowerCase());
     const combinaArea = areaSelecionada === 'Todas' || item.secretaria === areaSelecionada;
-    return combinaTexto && combinaArea;
+    const combinaEstrategica = filtroEstrategica ? item.estrategica === true : true;
+    return combinaTexto && combinaArea && combinaEstrategica;
   });
 
   const alertasFiltrados = listaAlertas.filter((item) => {
@@ -79,23 +84,14 @@ export default function Home() {
     let csvContent = "data:text/csv;charset=utf-8,ID;Secretaria;Nome/Objeto/Titulo;Status/Severidade;Detalhe\n";
     
     if (abaAtiva === 'metas') {
-      promessasFiltradas.forEach((item) => {
-        csvContent += `"${item.id}";"${item.area}";"${item.promessa}";"${item.status_geral}";"${item.fases_evidencia.orcamento.dotacao_atualizada}"\r\n`;
-      });
+      promessasFiltradas.forEach((item) => { csvContent += `"${item.id}";"${item.area}";"${item.promessa}";"${item.status_geral}";"${item.fases_evidencia.orcamento.dotacao_atualizada}"\r\n`; });
     } else if (abaAtiva === 'contratos') {
-      contratosFiltrados.forEach((item) => {
-        csvContent += `"${item.id_contrato}";"${item.secretaria}";"${item.objeto}";"${item.status}";"${item.valor_atualizado}"\r\n`;
-      });
+      contratosFiltrados.forEach((item) => { csvContent += `"${item.id_contrato}";"${item.secretaria}";"${item.objeto}";"${item.status}";"${item.valor_atualizado}"\r\n`; });
     } else if (abaAtiva === 'obras') {
-      obrasFiltradas.forEach((item) => {
-        csvContent += `"${item.id_obra}";"${item.secretaria}";"${item.nome}";"${item.status}";"${item.valor_obra}"\r\n`;
-      });
+      obrasFiltradas.forEach((item) => { csvContent += `"${item.id_obra}";"${item.secretaria}";"${item.nome}";"${item.status}";"${item.valor_obra}"\r\n`; });
     } else {
-      alertasFiltrados.forEach((item) => {
-        csvContent += `"${item.id_alerta}";"${item.entidade_relacionada}";"${item.titulo}";"${item.severidade}";"${item.status}"\r\n`;
-      });
+      alertasFiltrados.forEach((item) => { csvContent += `"${item.id_alerta}";"${item.entidade_relacionada}";"${item.titulo}";"${item.severidade}";"${item.status}"\r\n`; });
     }
-
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
@@ -111,9 +107,7 @@ export default function Home() {
         <div>
           <h2 style={{ color: '#1E293B', marginBottom: '15px' }}>Acesso Encerrado</h2>
           <p style={{ color: '#64748B', marginBottom: '20px' }}>Você optou por não aceitar os termos de uso.</p>
-          <button onClick={() => setRecusouTermos(false)} style={{ padding: '12px 24px', backgroundColor: '#0F172A', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>
-            Voltar e ler novamente
-          </button>
+          <button onClick={() => setRecusouTermos(false)} style={{ padding: '12px 24px', backgroundColor: '#0F172A', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>Voltar e ler novamente</button>
         </div>
       </div>
     );
@@ -130,16 +124,9 @@ export default function Home() {
           </p>
           <div style={{ marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '12px', backgroundColor: '#F8FAFC', padding: '16px', borderRadius: '10px', border: '1px solid #E2E8F0' }}>
             <input type="checkbox" id="aceito" checked={caixaMarcada} onChange={(e) => setCaixaMarcada(e.target.checked)} style={{ width: '20px', height: '20px', cursor: 'pointer' }} />
-            <label htmlFor="aceito" style={{ color: '#1E293B', fontWeight: 'bold', cursor: 'pointer', userSelect: 'none', fontSize: '14px' }}>
-              Declaro que li, compreendo e aceito os termos descritos acima.
-            </label>
+            <label htmlFor="aceito" style={{ color: '#1E293B', fontWeight: 'bold', cursor: 'pointer', userSelect: 'none', fontSize: '14px' }}>Declaro que li e aceito os termos.</label>
           </div>
-          <button disabled={!caixaMarcada} onClick={() => setTermosAceitos(true)} style={{ width: '100%', padding: '16px', color: 'white', border: 'none', borderRadius: '10px', fontSize: '16px', fontWeight: 'bold', cursor: caixaMarcada ? 'pointer' : 'not-allowed', backgroundColor: caixaMarcada ? '#059669' : '#A7F3D0' }}>
-            Aceitar e Entrar
-          </button>
-          <button onClick={() => setRecusouTermos(true)} style={{ width: '100%', padding: '14px', backgroundColor: 'transparent', color: '#DC2626', border: '1px solid #DC2626', borderRadius: '10px', fontSize: '15px', fontWeight: 'bold', cursor: 'pointer', marginTop: '12px' }}>
-            Não aceitar e Sair
-          </button>
+          <button disabled={!caixaMarcada} onClick={() => setTermosAceitos(true)} style={{ width: '100%', padding: '16px', color: 'white', border: 'none', borderRadius: '10px', fontSize: '16px', fontWeight: 'bold', cursor: caixaMarcada ? 'pointer' : 'not-allowed', backgroundColor: caixaMarcada ? '#059669' : '#A7F3D0' }}>Aceitar e Entrar</button>
         </div>
       </div>
     );
@@ -148,7 +135,7 @@ export default function Home() {
   if (listaPromessas.length === 0) {
     return (
       <div style={{ padding: '60px', textAlign: 'center', fontFamily: 'sans-serif', color: '#475569' }}>
-        <h2>⏳ Carregando o PACTO (Secretarias, Contratos, Obras e Alertas)...</h2>
+        <h2>⏳ Carregando o PACTO Completo...</h2>
       </div>
     );
   }
@@ -170,23 +157,23 @@ export default function Home() {
       {/* Painel de Indicadores Globais */}
       {indicadoresGlobais && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '16px', marginBottom: '24px' }}>
-          <div style={{ backgroundColor: 'white', padding: '16px', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', borderLeft: '5px solid #0F172A' }}>
+          <div style={{ backgroundColor: 'white', padding: '16px', borderRadius: '12px', borderLeft: '5px solid #0F172A' }}>
             <p style={{ color: '#64748B', fontSize: '11px', textTransform: 'uppercase', fontWeight: 'bold' }}>Total de Metas</p>
             <h2 style={{ color: '#0F172A', fontSize: '22px', marginTop: '4px' }}>{indicadoresGlobais.total_metas}</h2>
           </div>
-          <div style={{ backgroundColor: 'white', padding: '16px', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', borderLeft: '5px solid #059669' }}>
+          <div style={{ backgroundColor: 'white', padding: '16px', borderRadius: '12px', borderLeft: '5px solid #059669' }}>
             <p style={{ color: '#64748B', fontSize: '11px', textTransform: 'uppercase', fontWeight: 'bold' }}>Média Execução</p>
             <h2 style={{ color: '#059669', fontSize: '22px', marginTop: '4px' }}>{indicadoresGlobais.media_execucao_global}</h2>
           </div>
-          <div style={{ backgroundColor: 'white', padding: '16px', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', borderLeft: '5px solid #3B82F6' }}>
+          <div style={{ backgroundColor: 'white', padding: '16px', borderRadius: '12px', borderLeft: '5px solid #3B82F6' }}>
             <p style={{ color: '#64748B', fontSize: '11px', textTransform: 'uppercase', fontWeight: 'bold' }}>Contratos</p>
             <h2 style={{ color: '#3B82F6', fontSize: '22px', marginTop: '4px' }}>{indicadoresGlobais.total_contratos_monitorados}</h2>
           </div>
-          <div style={{ backgroundColor: 'white', padding: '16px', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', borderLeft: '5px solid #8B5CF6' }}>
+          <div style={{ backgroundColor: 'white', padding: '16px', borderRadius: '12px', borderLeft: '5px solid #8B5CF6' }}>
             <p style={{ color: '#64748B', fontSize: '11px', textTransform: 'uppercase', fontWeight: 'bold' }}>Obras Geo</p>
             <h2 style={{ color: '#8B5CF6', fontSize: '22px', marginTop: '4px' }}>{indicadoresGlobais.total_obras_geolocalizadas}</h2>
           </div>
-          <div style={{ backgroundColor: 'white', padding: '16px', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', borderLeft: '5px solid #DC2626' }}>
+          <div style={{ backgroundColor: 'white', padding: '16px', borderRadius: '12px', borderLeft: '5px solid #DC2626' }}>
             <p style={{ color: '#64748B', fontSize: '11px', textTransform: 'uppercase', fontWeight: 'bold' }}>Alertas Analíticos</p>
             <h2 style={{ color: '#DC2626', fontSize: '22px', marginTop: '4px' }}>{indicadoresGlobais.total_alertas_analiticos}</h2>
           </div>
@@ -195,35 +182,30 @@ export default function Home() {
 
       {/* Navegação por Abas */}
       <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
-        <button onClick={() => setAbaAtiva('metas')} style={{ padding: '10px 18px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px', backgroundColor: abaAtiva === 'metas' ? '#0F172A' : '#E2E8F0', color: abaAtiva === 'metas' ? 'white' : '#475569' }}>
-          🎯 Metas e Promessas
-        </button>
-        <button onClick={() => setAbaAtiva('contratos')} style={{ padding: '10px 18px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px', backgroundColor: abaAtiva === 'contratos' ? '#0F172A' : '#E2E8F0', color: abaAtiva === 'contratos' ? 'white' : '#475569' }}>
-          📑 Contratos e Fornecedores
-        </button>
-        <button onClick={() => setAbaAtiva('obras')} style={{ padding: '10px 18px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px', backgroundColor: abaAtiva === 'obras' ? '#0F172A' : '#E2E8F0', color: abaAtiva === 'obras' ? 'white' : '#475569' }}>
-          🏗️ Obras Públicas
-        </button>
-        <button onClick={() => setAbaAtiva('alertas')} style={{ padding: '10px 18px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px', backgroundColor: abaAtiva === 'alertas' ? '#0F172A' : '#E2E8F0', color: abaAtiva === 'alertas' ? 'white' : '#475569' }}>
-          🚨 Alertas Analíticos
-        </button>
+        <button onClick={() => setAbaAtiva('metas')} style={{ padding: '10px 18px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px', backgroundColor: abaAtiva === 'metas' ? '#0F172A' : '#E2E8F0', color: abaAtiva === 'metas' ? 'white' : '#475569' }}>🎯 Metas e Promessas</button>
+        <button onClick={() => setAbaAtiva('contratos')} style={{ padding: '10px 18px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px', backgroundColor: abaAtiva === 'contratos' ? '#0F172A' : '#E2E8F0', color: abaAtiva === 'contratos' ? 'white' : '#475569' }}>📑 Contratos e Fornecedores</button>
+        <button onClick={() => setAbaAtiva('obras')} style={{ padding: '10px 18px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px', backgroundColor: abaAtiva === 'obras' ? '#0F172A' : '#E2E8F0', color: abaAtiva === 'obras' ? 'white' : '#475569' }}>🏗️ Obras Públicas</button>
+        <button onClick={() => setAbaAtiva('alertas')} style={{ padding: '10px 18px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px', backgroundColor: abaAtiva === 'alertas' ? '#0F172A' : '#E2E8F0', color: abaAtiva === 'alertas' ? 'white' : '#475569' }}>🚨 Alertas Analíticos</button>
       </div>
 
+      {/* Botão de Filtro Estratégico (Só aparece na aba de Obras - IDEIA 2) */}
+      {abaAtiva === 'obras' && (
+        <div style={{ marginBottom: '20px' }}>
+          <button 
+            onClick={() => setFiltroEstrategica(!filtroEstrategica)} 
+            style={{ padding: '12px 20px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontWeight: 'bold', fontSize: '14px', backgroundColor: filtroEstrategica ? '#FEF08A' : '#F8FAFC', color: filtroEstrategica ? '#854D0E' : '#475569', borderBottom: filtroEstrategica ? '3px solid #EAB308' : '3px solid #CBD5E1', transition: 'all 0.2s' }}
+          >
+            {filtroEstrategica ? '⭐ Visualizando Obras Estratégicas' : '⬜ Filtrar Obras Estratégicas'}
+          </button>
+        </div>
+      )}
+
       {/* Seletor Dinâmico de Secretarias */}
-      <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '12px', marginBottom: '20px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', border: '1px solid #E2E8F0' }}>
-        <label htmlFor="seletor-secretaria" style={{ display: 'block', fontWeight: 'bold', color: '#1E293B', marginBottom: '8px', fontSize: '14px' }}>
-          🏢 Filtrar por Secretaria do Governo:
-        </label>
-        <select 
-          id="seletor-secretaria"
-          value={areaSelecionada} 
-          onChange={(e) => setAreaSelecionada(e.target.value)}
-          style={{ width: '100%', padding: '14px', fontSize: '15px', borderRadius: '8px', border: '1px solid #CBD5E1', backgroundColor: '#F8FAFC', color: '#1E293B', fontWeight: 'bold', outline: 'none', cursor: 'pointer' }}
-        >
+      <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '12px', marginBottom: '20px', border: '1px solid #E2E8F0' }}>
+        <label htmlFor="seletor-secretaria" style={{ display: 'block', fontWeight: 'bold', color: '#1E293B', marginBottom: '8px', fontSize: '14px' }}>🏢 Filtrar por Secretaria:</label>
+        <select id="seletor-secretaria" value={areaSelecionada} onChange={(e) => setAreaSelecionada(e.target.value)} style={{ width: '100%', padding: '14px', fontSize: '15px', borderRadius: '8px', border: '1px solid #CBD5E1', backgroundColor: '#F8FAFC', color: '#1E293B', fontWeight: 'bold', outline: 'none', cursor: 'pointer' }}>
           {secretariasDisponiveis.map(( secretaria ) => (
-            <option key={secretaria} value={secretaria}>
-              {secretaria === 'Todas' ? '📂 Todas as Secretarias do Estado de SP' : secretaria}
-            </option>
+            <option key={secretaria} value={secretaria}>{secretaria === 'Todas' ? '📂 Todas as Secretarias do Estado de SP' : secretaria}</option>
           ))}
         </select>
       </div>
@@ -231,11 +213,13 @@ export default function Home() {
       {/* Barra de Pesquisa */}
       <input type="text" placeholder={abaAtiva === 'metas' ? "🔍 Pesquise por promessa..." : abaAtiva === 'contratos' ? "🔍 Pesquise por contrato ou fornecedor..." : abaAtiva === 'obras' ? "🔍 Pesquise por nome da obra..." : "🔍 Pesquise por título do alerta..."} value={textoPesquisa} onChange={(e) => setTextoPesquisa(e.target.value)} style={{ width: '100%', padding: '16px', fontSize: '16px', borderRadius: '10px', border: '1px solid #CBD5E1', marginBottom: '24px', backgroundColor: 'white', outline: 'none' }} />
 
-      {/* RENDERIZAÇÃO DA ABA: METAS E PROMESSAS */}
+      {/* ========================================== */}
+      {/* RENDERIZAÇÃO DA ABA: METAS E PROMESSAS     */}
+      {/* ========================================== */}
       {abaAtiva === 'metas' && promessasFiltradas.map((dados) => (
         <div key={dados.id} style={{ backgroundColor: 'white', padding: '30px', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', marginBottom: '24px', border: '1px solid #E2E8F0' }}>
           
-          {/* Selo Oficial de Rastreabilidade */}
+          {/* Selo Oficial de Rastreabilidade (IDEIA 1) */}
           {dados.referencia_plano && (
             <div style={{ display: 'inline-flex', alignItems: 'center', backgroundColor: '#EFF6FF', color: '#1E3A8A', padding: '6px 12px', borderRadius: '8px', fontSize: '13px', fontWeight: 'bold', marginBottom: '16px', border: '1px solid #BFDBFE' }}>
               📘 Previsto no Plano de Governo Oficial - Eixo: {dados.referencia_plano.eixo} ({dados.referencia_plano.pagina})
@@ -250,6 +234,7 @@ export default function Home() {
               {dados.status_geral}
             </span>
           </div>
+          
           <h2 style={{ color: '#1E293B', fontSize: '20px', marginBottom: '16px', lineHeight: '1.4' }}>{dados.promessa}</h2>
           
           {dados.alerta_analitico && (
@@ -285,7 +270,10 @@ export default function Home() {
           </div>
         </div>
       ))}
-      {/* RENDERIZAÇÃO DA ABA: CONTRATOS E FORNECEDORES */}
+
+      {/* ========================================== */}
+      {/* RENDERIZAÇÃO DA ABA: CONTRATOS               */}
+      {/* ========================================== */}
       {abaAtiva === 'contratos' && contratosFiltrados.map((item) => (
         <div key={item.id_contrato} style={{ backgroundColor: 'white', padding: '30px', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', marginBottom: '24px', border: '1px solid #E2E8F0' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap', gap: '10px' }}>
@@ -308,9 +296,19 @@ export default function Home() {
         </div>
       ))}
 
-      {/* RENDERIZAÇÃO DA ABA: OBRAS PÚBLICAS */}
+      {/* ========================================== */}
+      {/* RENDERIZAÇÃO DA ABA: OBRAS PÚBLICAS          */}
+      {/* ========================================== */}
       {abaAtiva === 'obras' && obrasFiltradas.map((obra) => (
-        <div key={obra.id_obra} style={{ backgroundColor: 'white', padding: '30px', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', marginBottom: '24px', border: '1px solid #E2E8F0' }}>
+        <div key={obra.id_obra} style={{ backgroundColor: 'white', padding: '30px', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', marginBottom: '24px', border: obra.estrategica ? '2px solid #FEF08A' : '1px solid #E2E8F0' }}>
+          
+          {/* Badge de Obra Estratégica (IDEIA 2) */}
+          {obra.estrategica && (
+            <div style={{ display: 'inline-flex', backgroundColor: '#FEF08A', color: '#854D0E', padding: '6px 12px', borderRadius: '8px', fontSize: '13px', fontWeight: 'bold', marginBottom: '16px' }}>
+              ⭐ Obra Estratégica Prioritária
+            </div>
+          )}
+
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap', gap: '10px' }}>
             <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#8B5CF6', backgroundColor: '#F3E8FF', padding: '6px 12px', borderRadius: '6px', textTransform: 'uppercase' }}>
               Obra: {obra.id_obra} • Secretaria: {obra.secretaria}
@@ -321,6 +319,7 @@ export default function Home() {
           </div>
           <h2 style={{ color: '#1E293B', fontSize: '18px', marginBottom: '10px', lineHeight: '1.4' }}>{obra.nome}</h2>
           <p style={{ color: '#475569', fontSize: '14px', marginBottom: '16px' }}>{obra.descricao}</p>
+          
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '16px', marginBottom: '16px' }}>
             <div style={{ backgroundColor: '#F8FAFC', padding: '14px', borderRadius: '8px', borderLeft: '4px solid #8B5CF6' }}>
               <h3 style={{ fontSize: '13px', color: '#334155', marginBottom: '6px', fontWeight: 'bold' }}>📍 Geolocalização & Local</h3>
@@ -333,12 +332,14 @@ export default function Home() {
               <p style={{ fontSize: '12px', color: '#64748B' }}><strong>Previsão Término:</strong> {obra.previsao_termino}</p>
             </div>
           </div>
+          
           <div style={{ backgroundColor: '#F8FAFC', padding: '16px', borderRadius: '8px', marginBottom: '16px' }}>
             <h3 style={{ fontSize: '13px', color: '#334155', marginBottom: '8px', fontWeight: 'bold' }}>📜 Histórico Cronológico da Obra</h3>
             {obra.historico.map((h: string, index: number) => (
               <p key={index} style={{ fontSize: '13px', color: '#64748B', marginBottom: '4px' }}>• {h}</p>
             ))}
           </div>
+          
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
               <span style={{ fontSize: '12px', color: '#475569', fontWeight: 'bold' }}>Progresso Físico</span>
@@ -351,7 +352,9 @@ export default function Home() {
         </div>
       ))}
 
-      {/* RENDERIZAÇÃO DA ABA: ALERTAS ANALÍTICOS */}
+      {/* ========================================== */}
+      {/* RENDERIZAÇÃO DA ABA: ALERTAS ANALÍTICOS      */}
+      {/* ========================================== */}
       {abaAtiva === 'alertas' && alertasFiltrados.map((alerta) => (
         <div key={alerta.id_alerta} style={{ backgroundColor: 'white', padding: '30px', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', marginBottom: '24px', border: '1px solid #E2E8F0' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap', gap: '10px' }}>
