@@ -1,11 +1,12 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Path
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 from datetime import datetime
 
 app = FastAPI(
     title="API PACTO - Inteligência Cívica",
-    description="Backend oficial da plataforma PACTO com Sistema de Alertas Analíticos Avançados.",
-    version="1.9.0"
+    description="Backend oficial da plataforma PACTO com Validações Finas e Tratamento de Erros.",
+    version="2.0.0"
 )
 
 app.add_middleware(
@@ -16,7 +17,22 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Banco de Dados Oficial Completo com as 24 Secretarias do Governo de São Paulo
+# =====================================================================
+# 1. MODELOS DE VALIDAÇÃO (PYDANTIC)
+# Garantem que a API responda sempre no formato exato esperado
+# =====================================================================
+class IndicadoresGlobaisModel(BaseModel):
+    total_metas: int
+    media_execucao_global: str
+    total_atrasadas: int
+    total_contratos_monitorados: int
+    total_obras_geolocalizadas: int
+    total_alertas_analiticos: int
+    fontes_integradas_ativas: int
+
+# =====================================================================
+# 2. BANCOS DE DADOS (Preservados: 24 Secretarias, Contratos, Obras e Alertas)
+# =====================================================================
 BANCO_DE_DADOS_PACTO = [
     {
         "id": 1, "entidade": "Governo do Estado de São Paulo", "area": "Casa Civil",
@@ -260,7 +276,6 @@ BANCO_DE_DADOS_PACTO = [
     }
 ]
 
-# Base de Contratos (Frente 1)
 BANCO_CONTRATOS_PACTO = [
     {
         "id_contrato": "CT-2026-089", "secretaria": "Saúde", "fornecedor": "OncoTech Equipamentos Médicos Ltda", "cnpj": "12.345.678/0001-99",
@@ -279,7 +294,6 @@ BANCO_CONTRATOS_PACTO = [
     }
 ]
 
-# Base de Obras (Frente 2)
 BANCO_OBRAS_PACTO = [
     {
         "id_obra": "OBRA-2026-01", "secretaria": "Saúde", "nome": "Centro de Atendimento Oncológico - Unidade Capital",
@@ -297,67 +311,75 @@ BANCO_OBRAS_PACTO = [
     }
 ]
 
-# Nova Base: Sistema de Alertas Analíticos Avançados (Frente 3)
 BANCO_ALERTAS_PACTO = [
     {
-        "id_alerta": "ALERTA-001",
-        "severidade": "CRÍTICO",
-        "entidade_relacionada": "Logística e Transportes",
+        "id_alerta": "ALERTA-001", "severidade": "CRÍTICO", "entidade_relacionada": "Logística e Transportes",
         "titulo": "Atraso Crítico em Cronograma de Obra Rodoviária",
         "descricao": "O ritmo de execução física da obra SP-280 encontra-se abaixo do patamar contratual esperado para o período.",
-        "data_emissao": "2026-09-10",
-        "status": "Ativo"
+        "data_emissao": "2026-09-10", "status": "Ativo"
     },
     {
-        "id_alerta": "ALERTA-002",
-        "severidade": "ATENÇÃO",
-        "entidade_relacionada": "Saúde",
+        "id_alerta": "ALERTA-002", "severidade": "ATENÇÃO", "entidade_relacionada": "Saúde",
         "titulo": "Variação Relevante em Termo Aditivo de Contrato",
         "descricao": "Identificada variação superior a 3.7% no valor atualizado do contrato de equipamentos oncológicos.",
-        "data_emissao": "2026-09-12",
-        "status": "Ativo"
+        "data_emissao": "2026-09-12", "status": "Ativo"
     },
     {
-        "id_alerta": "ALERTA-003",
-        "severidade": "INFORMATIVO",
-        "entidade_relacionada": "Fazenda e Planejamento",
+        "id_alerta": "ALERTA-003", "severidade": "INFORMATIVO", "entidade_relacionada": "Fazenda e Planejamento",
         "titulo": "Meta de Transparência Fiscal Cumprida",
         "descricao": "A secretaria atingiu 100% de conformidade na digitalização de processos fiscais previstos no PPA.",
-        "data_emissao": "2026-09-14",
-        "status": "Resolvido"
+        "data_emissao": "2026-09-14", "status": "Resolvido"
     }
 ]
 
 FONTES_OFICIAIS_REGISTRADAS = [
-    {"id_fonte": "SRC-001", "nome": "Portal da Transparência do Estado de São Paulo", "tipo": "Orçamento e Execução", "status": "Ativo", "ultima_checagem": datetime.now().strftime("%Y-%m-%d %H:%M:%S")},
-    {"id_fonte": "SRC-002", "nome": "Portal Nacional de Contratações Públicas (PNCP)", "tipo": "Contratos e Licitações", "status": "Ativo", "ultima_checagem": datetime.now().strftime("%Y-%m-%d %H:%M:%S")},
-    {"id_fonte": "SRC-003", "nome": "Sistema de Acompanhamento de Obras (SIGEO)", "tipo": "Geolocalização", "status": "Ativo", "ultima_checagem": datetime.now().strftime("%Y-%m-%d %H:%M:%S")},
-    {"id_fonte": "SRC-004", "nome": "Motor Analítico Estatístico do PACTO", "tipo": "Auditoria de Regras", "status": "Ativo", "ultima_checagem": datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+    {"id_fonte": "SRC-001", "nome": "Portal da Transparência", "tipo": "Orçamento e Execução", "status": "Ativo", "ultima_checagem": datetime.now().strftime("%Y-%m-%d %H:%M:%S")},
+    {"id_fonte": "SRC-002", "nome": "PNCP", "tipo": "Contratos", "status": "Ativo", "ultima_checagem": datetime.now().strftime("%Y-%m-%d %H:%M:%S")},
+    {"id_fonte": "SRC-003", "nome": "SIGEO", "tipo": "Geolocalização", "status": "Ativo", "ultima_checagem": datetime.now().strftime("%Y-%m-%d %H:%M:%S")},
+    {"id_fonte": "SRC-004", "nome": "Motor PACTO", "tipo": "Auditoria de Regras", "status": "Ativo", "ultima_checagem": datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 ]
 
+# =====================================================================
+# 3. LÓGICA DO MOTOR ANALÍTICO
+# =====================================================================
 def aplicar_motor_analitico(promessa_item: dict) -> dict:
     exec_str = promessa_item["fases_evidencia"]["execucao"]["percentual_execucao"].replace("%", "")
     execucao_valor = int(exec_str)
     status = promessa_item["status_geral"]
 
     if status == "ATRASADA" and execucao_valor < 30:
-        alerta = {"corFundo": "#FEE2E2", "corTexto": "#DC2626", "mensagem": "🚨 Motor Analítico PACTO: Alerta Crítico. Ritmo de entrega incompatível com o prazo estipulado."}
+        alerta = {"corFundo": "#FEE2E2", "corTexto": "#DC2626", "mensagem": "🚨 Motor Analítico PACTO: Alerta Crítico. Ritmo incompatível."}
     elif execucao_valor < 50 and status != "CONCLUÍDA":
-        alerta = {"corFundo": "#FEF3C7", "corTexto": "#D97706", "mensagem": "⚠️ Motor Analítico PACTO: Atenção moderada. Execução física abaixo de 50% da meta global."}
+        alerta = {"corFundo": "#FEF3C7", "corTexto": "#D97706", "mensagem": "⚠️ Motor Analítico PACTO: Atenção moderada. Execução abaixo de 50%."}
     else:
-        alerta = {"corFundo": "#D1FAE5", "corTexto": "#047857", "mensagem": "✅ Motor Analítico PACTO: Execução dentro dos parâmetros esperados de eficiência."}
+        alerta = {"corFundo": "#D1FAE5", "corTexto": "#047857", "mensagem": "✅ Motor Analítico PACTO: Execução dentro dos parâmetros."}
 
     item_com_alerta = dict(promessa_item)
     item_com_alerta["alerta_analitico"] = alerta
     return item_com_alerta
 
+# =====================================================================
+# 4. ROTAS DA API COM VALIDAÇÃO E TRATAMENTO DE ERROS (OPÇÃO B)
+# =====================================================================
 @app.get("/", summary="Raiz da API")
 def raiz():
-    return {"sistema": "API PACTO - Módulo de Alertas Analíticos Avançados Ativo", "versao": "1.9.0"}
+    return {"sistema": "API PACTO - Validações e Tratamento de Erros Ativos", "versao": "2.0.0"}
 
-@app.get("/api/v1/promessas", summary="Listar promessas")
+@app.get("/api/v1/promessas", summary="Listar todas as promessas")
 def listar_promessas():
     return [aplicar_motor_analitico(item) for item in BANCO_DE_DADOS_PACTO]
+
+# NOVA ROTA (Tratamento de Erro): Filtro robusto por Secretaria
+@app.get("/api/v1/promessas/{area}", summary="Filtrar promessas por área com Validação")
+def filtrar_promessas_por_area(area: str = Path(..., description="Nome exato da Secretaria")):
+    """Busca as promessas de uma secretaria. Retorna erro 404 seguro se não existir."""
+    resultados = [aplicar_motor_analitico(item) for item in BANCO_DE_DADOS_PACTO if item["area"].lower() == area.lower()]
+    
+    # Tratamento de Erro Seguro (Impede que a aplicação quebre)
+    if not resultados:
+        raise HTTPException(status_code=404, detail=f"Erro PACTO: A secretaria '{area}' não foi encontrada na nossa base de dados.")
+    
+    return resultados
 
 @app.get("/api/v1/contratos", summary="Listar Contratos")
 def listar_contratos():
@@ -367,17 +389,19 @@ def listar_contratos():
 def listar_obras():
     return BANCO_OBRAS_PACTO
 
-@app.get("/api/v1/alertas", summary="Listar Alertas Analíticos Avançados")
+@app.get("/api/v1/alertas", summary="Listar Alertas Analíticos")
 def listar_alertas():
-    """Retorna o sistema de alertas analíticos gerados pelo motor estatístico do PACTO."""
     return BANCO_ALERTAS_PACTO
 
-@app.get("/api/v1/indicadores", summary="Indicadores Globais Consolidados")
+# ROTA COM PYDANTIC (Garante o formato exato da resposta para não quebrar o site/app)
+@app.get("/api/v1/indicadores", response_model=IndicadoresGlobaisModel, summary="Indicadores Globais Seguros")
 def obter_indicadores_globais():
     total = len(BANCO_DE_DADOS_PACTO)
     soma = sum(int(i["fases_evidencia"]["execucao"]["percentual_execucao"].replace("%","")) for i in BANCO_DE_DADOS_PACTO)
     media = round(soma / total) if total > 0 else 0
     atrasadas = sum(1 for i in BANCO_DE_DADOS_PACTO if i["status_geral"] == "ATRASADA")
+    
+    # O Pydantic irá forçar os tipos (int, string) definidos na classe IndicadoresGlobaisModel
     return {
         "total_metas": total,
         "media_execucao_global": f"{media}%",
