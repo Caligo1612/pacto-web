@@ -18,18 +18,41 @@ export default function Home() {
   // =====================================================================
   // 2. BUSCA DE DADOS NA NUVEM (Servidor Render)
   // =====================================================================
-  // URL atualizada para buscar de todas as áreas no Render
   useEffect(() => {
     fetch('https://pacto-web.onrender.com/api/v1/promessas')
       .then((resposta) => resposta.json()) 
       .then((dadosRecebidos) => setListaPromessas(dadosRecebidos))
       .catch((erro) => console.log("Erro ao buscar dados do servidor:", erro));
   }, []);
+
   const promessasFiltradas = listaPromessas.filter((item) => {
     const combinaTexto = item.promessa.toLowerCase().includes(textoPesquisa.toLowerCase());
     const combinaArea = areaSelecionada === 'Todas' || item.area === areaSelecionada;
     return combinaTexto && combinaArea;
   });
+
+  // =====================================================================
+  // 3. FUNÇÃO DE EXPORTAÇÃO PARA CSV (Opção A)
+  // =====================================================================
+  const exportarParaCSV = () => {
+    // Cabeçalho do arquivo CSV
+    let csvContent = "data:text/csv;charset=utf-8,ID;Entidade;Área;Promessa;Status;Orçamento Atualizado;Percentual Execução\n";
+
+    // Adiciona cada promessa filtrada como uma linha no arquivo
+    promessasFiltradas.forEach((item) => {
+      const linha = `"${item.id}";"${item.entidade}";"${item.area}";"${item.promessa}";"${item.status_geral}";"${item.fases_evidencia.orcamento.dotacao_atualizada}";"${item.fases_evidencia.execucao.percentual_execucao}"`;
+      csvContent += linha + "\r\n";
+    });
+
+    // Cria um link virtual para disparar o download do arquivo no navegador
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `relatorio_pacto_${areaSelecionada.toLowerCase()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   // =====================================================================
   // TELA DE RECUSA DOS TERMOS
@@ -130,11 +153,25 @@ export default function Home() {
   return (
     <div style={{ padding: '40px', fontFamily: 'sans-serif', backgroundColor: '#F5F5F5', minHeight: '100vh' }}>
       
-      <div style={{ backgroundColor: '#004A8D', color: 'white', padding: '20px', borderRadius: '8px', marginBottom: '20px' }}>
-        <h1>🏛️ PACTO Web</h1>
-        <p>Promessas. Dinheiro. Resultados.</p>
+      <div style={{ backgroundColor: '#004A8D', color: 'white', padding: '20px', borderRadius: '8px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px' }}>
+        <div>
+          <h1>🏛️ PACTO Web</h1>
+          <p>Promessas. Dinheiro. Resultados.</p>
+        </div>
+        
+        {/* BOTÃO DE EXPORTAÇÃO CSV */}
+        <button 
+          onClick={exportarParaCSV}
+          style={{
+            backgroundColor: '#10B981', color: 'white', border: 'none', padding: '12px 20px', borderRadius: '8px', 
+            fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+          }}
+        >
+          📥 Baixar Relatório (CSV)
+        </button>
       </div>
 
+      {/* FILTROS POR ÁREA */}
       <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
         {['Todas', 'Saúde', 'Segurança Pública', 'Infraestrutura'].map((area) => (
           <button 
@@ -150,12 +187,14 @@ export default function Home() {
         ))}
       </div>
 
+      {/* BARRA DE PESQUISA */}
       <input 
         type="text" placeholder="Pesquise por uma promessa..."
         value={textoPesquisa} onChange={(e) => setTextoPesquisa(e.target.value)}
         style={{ width: '100%', padding: '15px', fontSize: '16px', borderRadius: '8px', border: '1px solid #CCC', marginBottom: '30px' }}
       />
 
+      {/* LISTAGEM DE CARTÕES */}
       {promessasFiltradas.map((dados) => (
         <div key={dados.id} style={{ backgroundColor: 'white', padding: '30px', borderRadius: '8px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)', marginBottom: '20px' }}>
           
