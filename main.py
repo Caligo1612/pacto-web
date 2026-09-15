@@ -5,8 +5,8 @@ from datetime import datetime
 
 app = FastAPI(
     title="API PACTO - Inteligência Cívica",
-    description="Backend oficial da plataforma PACTO com Filtro de Obras Estratégicas.",
-    version="2.2.0"
+    description="Backend oficial da plataforma PACTO com Automação de Decurso de Prazo.",
+    version="2.3.0"
 )
 
 app.add_middleware(
@@ -27,7 +27,7 @@ class IndicadoresGlobaisModel(BaseModel):
     fontes_integradas_ativas: int
 
 # =====================================================================
-# BANCO DE DADOS: 24 SECRETARIAS (Preservadas com Referência Oficial)
+# BANCO DE DADOS: 24 SECRETARIAS
 # =====================================================================
 BANCO_DE_DADOS_PACTO = [
     {
@@ -314,9 +314,6 @@ BANCO_CONTRATOS_PACTO = [
     }
 ]
 
-# =====================================================================
-# BANCO DE OBRAS (Agora com a flag 'estrategica')
-# =====================================================================
 BANCO_OBRAS_PACTO = [
     {
         "id_obra": "OBRA-2026-01", "secretaria": "Saúde", "nome": "Centro de Atendimento Oncológico - Unidade Capital",
@@ -344,6 +341,7 @@ BANCO_OBRAS_PACTO = [
     }
 ]
 
+# NOVO: Inclusão do Alerta 004 sobre Decurso de Prazo Excedido em Licitações
 BANCO_ALERTAS_PACTO = [
     {
         "id_alerta": "ALERTA-001", "severidade": "CRÍTICO", "entidade_relacionada": "Logística e Transportes",
@@ -362,6 +360,12 @@ BANCO_ALERTAS_PACTO = [
         "titulo": "Meta de Transparência Fiscal Cumprida",
         "descricao": "A secretaria atingiu 100% de conformidade na digitalização de processos fiscais previstos no PPA.",
         "data_emissao": "2026-09-14", "status": "Resolvido"
+    },
+    {
+        "id_alerta": "ALERTA-004", "severidade": "CRÍTICO", "entidade_relacionada": "Gestão e Governo Digital",
+        "titulo": "Decurso de Prazo Excedido em Processo Administrativo",
+        "descricao": "Prazo máximo de resposta excedido. O processo torna-se passível de aprovação por decurso de prazo, visando eliminar gargalos de gestão pública.",
+        "data_emissao": "2026-09-15", "status": "Ativo"
     }
 ]
 
@@ -372,17 +376,33 @@ FONTES_OFICIAIS_REGISTRADAS = [
     {"id_fonte": "SRC-004", "nome": "Motor PACTO", "tipo": "Auditoria de Regras", "status": "Ativo", "ultima_checagem": datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 ]
 
+# =====================================================================
+# IDEIA 3: Lógica do Motor Analítico com Automação de Decurso de Prazo
+# =====================================================================
 def aplicar_motor_analitico(promessa_item: dict) -> dict:
     exec_str = promessa_item["fases_evidencia"]["execucao"]["percentual_execucao"].replace("%", "")
     execucao_valor = int(exec_str)
     status = promessa_item["status_geral"]
 
+    # Nova regra baseada nas diretrizes governamentais de celeridade
     if status == "ATRASADA" and execucao_valor < 30:
-        alerta = {"corFundo": "#FEE2E2", "corTexto": "#DC2626", "mensagem": "🚨 Motor Analítico PACTO: Alerta Crítico. Ritmo incompatível."}
+        alerta = {
+            "corFundo": "#FEE2E2", 
+            "corTexto": "#DC2626", 
+            "mensagem": "🚨 ALERTA DE DECURSO DE PRAZO EXCEDIDO: Ritmo incompatível. Prazo estourado sem justificativa técnica ativa."
+        }
     elif execucao_valor < 50 and status != "CONCLUÍDA":
-        alerta = {"corFundo": "#FEF3C7", "corTexto": "#D97706", "mensagem": "⚠️ Motor Analítico PACTO: Atenção moderada. Execução abaixo de 50%."}
+        alerta = {
+            "corFundo": "#FEF3C7", 
+            "corTexto": "#D97706", 
+            "mensagem": "⚠️ Atenção Moderada: Execução física abaixo de 50%. Risco iminente de acionamento do Decurso de Prazo."
+        }
     else:
-        alerta = {"corFundo": "#D1FAE5", "corTexto": "#047857", "mensagem": "✅ Motor Analítico PACTO: Execução dentro dos parâmetros."}
+        alerta = {
+            "corFundo": "#D1FAE5", 
+            "corTexto": "#047857", 
+            "mensagem": "✅ Execução Regular: Dentro dos parâmetros de eficiência e prazos legais."
+        }
 
     item_com_alerta = dict(promessa_item)
     item_com_alerta["alerta_analitico"] = alerta
@@ -390,7 +410,7 @@ def aplicar_motor_analitico(promessa_item: dict) -> dict:
 
 @app.get("/", summary="Raiz da API")
 def raiz():
-    return {"sistema": "API PACTO - Validações e Tratamento de Erros Ativos", "versao": "2.2.0"}
+    return {"sistema": "API PACTO - Validações, Obras Estratégicas e Motor de Decurso de Prazo Ativos", "versao": "2.3.0"}
 
 @app.get("/api/v1/promessas", summary="Listar todas as promessas")
 def listar_promessas():
