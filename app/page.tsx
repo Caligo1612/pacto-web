@@ -6,10 +6,11 @@ export default function Home() {
   const [listaPromessas, setListaPromessas] = useState<any[]>([]);
   const [listaContratos, setListaContratos] = useState<any[]>([]);
   const [listaObras, setListaObras] = useState<any[]>([]);
+  const [listaAlertas, setListaAlertas] = useState<any[]>([]);
   const [indicadoresGlobais, setIndicadoresGlobais] = useState<any>(null);
   
-  // Controle de Abas (Metas vs Contratos vs Obras) e Filtros
-  const [abaAtiva, setAbaAtiva] = useState<'metas' | 'contratos' | 'obras'>('metas');
+  // Controle de Abas (Metas vs Contratos vs Obras vs Alertas) e Filtros
+  const [abaAtiva, setAbaAtiva] = useState<'metas' | 'contratos' | 'obras' | 'alertas'>('metas');
   const [textoPesquisa, setTextoPesquisa] = useState('');
   const [areaSelecionada, setAreaSelecionada] = useState('Todas');
   
@@ -33,6 +34,11 @@ export default function Home() {
       .then((res) => res.json())
       .then((dados) => setListaObras(dados))
       .catch((err) => console.log("Erro ao buscar obras:", err));
+
+    fetch('https://pacto-web.onrender.com/api/v1/alertas')
+      .then((res) => res.json())
+      .then((dados) => setListaAlertas(dados))
+      .catch((err) => console.log("Erro ao buscar alertas:", err));
 
     fetch('https://pacto-web.onrender.com/api/v1/indicadores')
       .then((res) => res.json())
@@ -62,8 +68,15 @@ export default function Home() {
     return combinaTexto && combinaArea;
   });
 
+  const alertasFiltrados = listaAlertas.filter((item) => {
+    const combinaTexto = item.titulo.toLowerCase().includes(textoPesquisa.toLowerCase()) || 
+                         item.descricao.toLowerCase().includes(textoPesquisa.toLowerCase());
+    const combinaArea = areaSelecionada === 'Todas' || item.entidade_relacionada === areaSelecionada;
+    return combinaTexto && combinaArea;
+  });
+
   const exportarParaCSV = () => {
-    let csvContent = "data:text/csv;charset=utf-8,ID;Secretaria;Nome/Objeto;Status;Valor\n";
+    let csvContent = "data:text/csv;charset=utf-8,ID;Secretaria;Nome/Objeto/Titulo;Status/Severidade;Detalhe\n";
     
     if (abaAtiva === 'metas') {
       promessasFiltradas.forEach((item) => {
@@ -73,9 +86,13 @@ export default function Home() {
       contratosFiltrados.forEach((item) => {
         csvContent += `"${item.id_contrato}";"${item.secretaria}";"${item.objeto}";"${item.status}";"${item.valor_atualizado}"\r\n`;
       });
-    } else {
+    } else if (abaAtiva === 'obras') {
       obrasFiltradas.forEach((item) => {
         csvContent += `"${item.id_obra}";"${item.secretaria}";"${item.nome}";"${item.status}";"${item.valor_obra}"\r\n`;
+      });
+    } else {
+      alertasFiltrados.forEach((item) => {
+        csvContent += `"${item.id_alerta}";"${item.entidade_relacionada}";"${item.titulo}";"${item.severidade}";"${item.status}"\r\n`;
       });
     }
 
@@ -131,7 +148,7 @@ export default function Home() {
   if (listaPromessas.length === 0) {
     return (
       <div style={{ padding: '60px', textAlign: 'center', fontFamily: 'sans-serif', color: '#475569' }}>
-        <h2>⏳ Carregando o PACTO (Secretarias, Contratos e Obras)...</h2>
+        <h2>⏳ Carregando o PACTO (Secretarias, Contratos, Obras e Alertas)...</h2>
       </div>
     );
   }
@@ -143,7 +160,7 @@ export default function Home() {
       <div style={{ backgroundColor: '#0F172A', color: 'white', padding: '30px', borderRadius: '12px', marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '20px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}>
         <div>
           <h1 style={{ fontSize: '28px', marginBottom: '8px' }}>🏛️ PACTO Web</h1>
-          <p style={{ color: '#94A3B8', fontSize: '15px' }}>Promessas. Dinheiro. Resultados. (Gestão Completa de SP)</p>
+          <p style={{ color: '#94A3B8', fontSize: '15px' }}>Promessas. Dinheiro. Resultados. (Ecossistema Completo)</p>
         </div>
         <button onClick={exportarParaCSV} style={{ backgroundColor: '#059669', color: 'white', border: 'none', padding: '12px 20px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
           📥 Baixar Relatório ({abaAtiva.toUpperCase()})
@@ -152,36 +169,43 @@ export default function Home() {
 
       {/* Painel de Indicadores Globais */}
       {indicadoresGlobais && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '24px' }}>
-          <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', borderLeft: '5px solid #0F172A' }}>
-            <p style={{ color: '#64748B', fontSize: '12px', textTransform: 'uppercase', fontWeight: 'bold' }}>Total de Metas</p>
-            <h2 style={{ color: '#0F172A', fontSize: '24px', marginTop: '6px' }}>{indicadoresGlobais.total_metas}</h2>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '16px', marginBottom: '24px' }}>
+          <div style={{ backgroundColor: 'white', padding: '16px', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', borderLeft: '5px solid #0F172A' }}>
+            <p style={{ color: '#64748B', fontSize: '11px', textTransform: 'uppercase', fontWeight: 'bold' }}>Total de Metas</p>
+            <h2 style={{ color: '#0F172A', fontSize: '22px', marginTop: '4px' }}>{indicadoresGlobais.total_metas}</h2>
           </div>
-          <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', borderLeft: '5px solid #059669' }}>
-            <p style={{ color: '#64748B', fontSize: '12px', textTransform: 'uppercase', fontWeight: 'bold' }}>Média de Execução</p>
-            <h2 style={{ color: '#059669', fontSize: '24px', marginTop: '6px' }}>{indicadoresGlobais.media_execucao_global}</h2>
+          <div style={{ backgroundColor: 'white', padding: '16px', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', borderLeft: '5px solid #059669' }}>
+            <p style={{ color: '#64748B', fontSize: '11px', textTransform: 'uppercase', fontWeight: 'bold' }}>Média Execução</p>
+            <h2 style={{ color: '#059669', fontSize: '22px', marginTop: '4px' }}>{indicadoresGlobais.media_execucao_global}</h2>
           </div>
-          <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', borderLeft: '5px solid #3B82F6' }}>
-            <p style={{ color: '#64748B', fontSize: '12px', textTransform: 'uppercase', fontWeight: 'bold' }}>Contratos Monitorados</p>
-            <h2 style={{ color: '#3B82F6', fontSize: '24px', marginTop: '6px' }}>{indicadoresGlobais.total_contratos_monitorados}</h2>
+          <div style={{ backgroundColor: 'white', padding: '16px', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', borderLeft: '5px solid #3B82F6' }}>
+            <p style={{ color: '#64748B', fontSize: '11px', textTransform: 'uppercase', fontWeight: 'bold' }}>Contratos</p>
+            <h2 style={{ color: '#3B82F6', fontSize: '22px', marginTop: '4px' }}>{indicadoresGlobais.total_contratos_monitorados}</h2>
           </div>
-          <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', borderLeft: '5px solid #8B5CF6' }}>
-            <p style={{ color: '#64748B', fontSize: '12px', textTransform: 'uppercase', fontWeight: 'bold' }}>Obras Geolocalizadas</p>
-            <h2 style={{ color: '#8B5CF6', fontSize: '24px', marginTop: '6px' }}>{indicadoresGlobais.total_obras_geolocalizadas}</h2>
+          <div style={{ backgroundColor: 'white', padding: '16px', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', borderLeft: '5px solid #8B5CF6' }}>
+            <p style={{ color: '#64748B', fontSize: '11px', textTransform: 'uppercase', fontWeight: 'bold' }}>Obras Geo</p>
+            <h2 style={{ color: '#8B5CF6', fontSize: '22px', marginTop: '4px' }}>{indicadoresGlobais.total_obras_geolocalizadas}</h2>
+          </div>
+          <div style={{ backgroundColor: 'white', padding: '16px', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', borderLeft: '5px solid #DC2626' }}>
+            <p style={{ color: '#64748B', fontSize: '11px', textTransform: 'uppercase', fontWeight: 'bold' }}>Alertas Analíticos</p>
+            <h2 style={{ color: '#DC2626', fontSize: '22px', marginTop: '4px' }}>{indicadoresGlobais.total_alertas_analiticos}</h2>
           </div>
         </div>
       )}
 
       {/* Navegação por Abas */}
-      <div style={{ display: 'flex', gap: '12px', marginBottom: '20px', flexWrap: 'wrap' }}>
-        <button onClick={() => setAbaAtiva('metas')} style={{ padding: '12px 20px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontWeight: 'bold', fontSize: '14px', backgroundColor: abaAtiva === 'metas' ? '#0F172A' : '#E2E8F0', color: abaAtiva === 'metas' ? 'white' : '#475569' }}>
+      <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
+        <button onClick={() => setAbaAtiva('metas')} style={{ padding: '10px 18px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px', backgroundColor: abaAtiva === 'metas' ? '#0F172A' : '#E2E8F0', color: abaAtiva === 'metas' ? 'white' : '#475569' }}>
           🎯 Metas e Promessas
         </button>
-        <button onClick={() => setAbaAtiva('contratos')} style={{ padding: '12px 20px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontWeight: 'bold', fontSize: '14px', backgroundColor: abaAtiva === 'contratos' ? '#0F172A' : '#E2E8F0', color: abaAtiva === 'contratos' ? 'white' : '#475569' }}>
+        <button onClick={() => setAbaAtiva('contratos')} style={{ padding: '10px 18px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px', backgroundColor: abaAtiva === 'contratos' ? '#0F172A' : '#E2E8F0', color: abaAtiva === 'contratos' ? 'white' : '#475569' }}>
           📑 Contratos e Fornecedores
         </button>
-        <button onClick={() => setAbaAtiva('obras')} style={{ padding: '12px 20px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontWeight: 'bold', fontSize: '14px', backgroundColor: abaAtiva === 'obras' ? '#0F172A' : '#E2E8F0', color: abaAtiva === 'obras' ? 'white' : '#475569' }}>
-          🏗️ Obras e Geolocalização
+        <button onClick={() => setAbaAtiva('obras')} style={{ padding: '10px 18px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px', backgroundColor: abaAtiva === 'obras' ? '#0F172A' : '#E2E8F0', color: abaAtiva === 'obras' ? 'white' : '#475569' }}>
+          🏗️ Obras Públicas
+        </button>
+        <button onClick={() => setAbaAtiva('alertas')} style={{ padding: '10px 18px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px', backgroundColor: abaAtiva === 'alertas' ? '#0F172A' : '#E2E8F0', color: abaAtiva === 'alertas' ? 'white' : '#475569' }}>
+          🚨 Alertas Analíticos
         </button>
       </div>
 
@@ -205,7 +229,7 @@ export default function Home() {
       </div>
 
       {/* Barra de Pesquisa */}
-      <input type="text" placeholder={abaAtiva === 'metas' ? "🔍 Pesquise por promessa..." : abaAtiva === 'contratos' ? "🔍 Pesquise por contrato ou fornecedor..." : "🔍 Pesquise por nome da obra..."} value={textoPesquisa} onChange={(e) => setTextoPesquisa(e.target.value)} style={{ width: '100%', padding: '16px', fontSize: '16px', borderRadius: '10px', border: '1px solid #CBD5E1', marginBottom: '24px', backgroundColor: 'white', outline: 'none' }} />
+      <input type="text" placeholder={abaAtiva === 'metas' ? "🔍 Pesquise por promessa..." : abaAtiva === 'contratos' ? "🔍 Pesquise por contrato ou fornecedor..." : abaAtiva === 'obras' ? "🔍 Pesquise por nome da obra..." : "🔍 Pesquise por título do alerta..."} value={textoPesquisa} onChange={(e) => setTextoPesquisa(e.target.value)} style={{ width: '100%', padding: '16px', fontSize: '16px', borderRadius: '10px', border: '1px solid #CBD5E1', marginBottom: '24px', backgroundColor: 'white', outline: 'none' }} />
 
       {/* RENDERIZAÇÃO DA ABA: METAS E PROMESSAS */}
       {abaAtiva === 'metas' && promessasFiltradas.map((dados) => (
@@ -275,7 +299,7 @@ export default function Home() {
         </div>
       ))}
 
-      {/* RENDERIZAÇÃO DA ABA: OBRAS E GEOLOCALIZAÇÃO */}
+      {/* RENDERIZAÇÃO DA ABA: OBRAS PÚBLICAS */}
       {abaAtiva === 'obras' && obrasFiltradas.map((obra) => (
         <div key={obra.id_obra} style={{ backgroundColor: 'white', padding: '30px', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', marginBottom: '24px', border: '1px solid #E2E8F0' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap', gap: '10px' }}>
@@ -288,7 +312,6 @@ export default function Home() {
           </div>
           <h2 style={{ color: '#1E293B', fontSize: '18px', marginBottom: '10px', lineHeight: '1.4' }}>{obra.nome}</h2>
           <p style={{ color: '#475569', fontSize: '14px', marginBottom: '16px' }}>{obra.descricao}</p>
-
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '16px', marginBottom: '16px' }}>
             <div style={{ backgroundColor: '#F8FAFC', padding: '14px', borderRadius: '8px', borderLeft: '4px solid #8B5CF6' }}>
               <h3 style={{ fontSize: '13px', color: '#334155', marginBottom: '6px', fontWeight: 'bold' }}>📍 Geolocalização & Local</h3>
@@ -301,14 +324,12 @@ export default function Home() {
               <p style={{ fontSize: '12px', color: '#64748B' }}><strong>Previsão Término:</strong> {obra.previsao_termino}</p>
             </div>
           </div>
-
           <div style={{ backgroundColor: '#F8FAFC', padding: '16px', borderRadius: '8px', marginBottom: '16px' }}>
             <h3 style={{ fontSize: '13px', color: '#334155', marginBottom: '8px', fontWeight: 'bold' }}>📜 Histórico Cronológico da Obra</h3>
             {obra.historico.map((h: string, index: number) => (
               <p key={index} style={{ fontSize: '13px', color: '#64748B', marginBottom: '4px' }}>• {h}</p>
             ))}
           </div>
-
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
               <span style={{ fontSize: '12px', color: '#475569', fontWeight: 'bold' }}>Progresso Físico</span>
@@ -317,6 +338,26 @@ export default function Home() {
             <div style={{ width: '100%', backgroundColor: '#E2E8F0', borderRadius: '6px', height: '8px', overflow: 'hidden' }}>
               <div style={{ height: '100%', backgroundColor: '#7C3AED', width: obra.percentual_execucao }} />
             </div>
+          </div>
+        </div>
+      ))}
+
+      {/* RENDERIZAÇÃO DA ABA: ALERTAS ANALÍTICOS */}
+      {abaAtiva === 'alertas' && alertasFiltrados.map((alerta) => (
+        <div key={alerta.id_alerta} style={{ backgroundColor: 'white', padding: '30px', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', marginBottom: '24px', border: '1px solid #E2E8F0' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap', gap: '10px' }}>
+            <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#DC2626', backgroundColor: '#FEF2F2', padding: '6px 12px', borderRadius: '6px', textTransform: 'uppercase' }}>
+              Alerta: {alerta.id_alerta} • Área: {alerta.entidade_relacionada}
+            </span>
+            <span style={{ backgroundColor: alerta.severidade === 'CRÍTICO' ? '#FEE2E2' : alerta.severidade === 'ATENÇÃO' ? '#FEF3C7' : '#E0F2FE', color:alerta.severidade === 'CRÍTICO' ? '#DC2626' : alerta.severidade === 'ATENÇÃO' ? '#D97706' : '#0369A1', padding: '6px 12px', borderRadius: '6px', fontWeight: 'bold', fontSize: '12px' }}>
+              Severidade: {alerta.severidade}
+            </span>
+          </div>
+          <h2 style={{ color: '#1E293B', fontSize: '18px', marginBottom: '12px', lineHeight: '1.4' }}>{alerta.titulo}</h2>
+          <p style={{ color: '#475569', fontSize: '14px', marginBottom: '16px', lineHeight: '1.5' }}>{alerta.descricao}</p>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#F8FAFC', padding: '12px 16px', borderRadius: '8px', fontSize: '13px', color: '#64748B' }}>
+            <span>Data de Emissão: <strong>{alerta.data_emissao}</strong></span>
+            <span>Status do Alerta: <strong style={{ color: alerta.status === 'Ativo' ? '#DC2626' : '#059669' }}>{alerta.status}</strong></span>
           </div>
         </div>
       ))}
