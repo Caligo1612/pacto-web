@@ -4,8 +4,8 @@ from datetime import datetime
 
 app = FastAPI(
     title="API PACTO - Inteligência Cívica",
-    description="Backend oficial da plataforma PACTO contendo 24 Secretarias, Contratos e Obras com Geolocalização.",
-    version="1.8.0"
+    description="Backend oficial da plataforma PACTO com Sistema de Alertas Analíticos Avançados.",
+    version="1.9.0"
 )
 
 app.add_middleware(
@@ -19,9 +19,7 @@ app.add_middleware(
 # Banco de Dados Oficial Completo com as 24 Secretarias do Governo de São Paulo
 BANCO_DE_DADOS_PACTO = [
     {
-        "id": 1,
-        "entidade": "Governo do Estado de São Paulo",
-        "area": "Casa Civil",
+        "id": 1, "entidade": "Governo do Estado de São Paulo", "area": "Casa Civil",
         "promessa": "Coordenação estratégica de políticas públicas e articulação interinstitucional.",
         "status_geral": "EM ANDAMENTO",
         "fases_evidencia": {
@@ -31,9 +29,7 @@ BANCO_DE_DADOS_PACTO = [
         }
     },
     {
-        "id": 2,
-        "entidade": "Governo do Estado de São Paulo",
-        "area": "Secretaria de Governo",
+        "id": 2, "entidade": "Governo do Estado de São Paulo", "area": "Secretaria de Governo",
         "promessa": "Modernização do atendimento municipal e parcerias estratégicas.",
         "status_geral": "EM ANDAMENTO",
         "fases_evidencia": {
@@ -43,9 +39,7 @@ BANCO_DE_DADOS_PACTO = [
         }
     },
     {
-        "id": 3,
-        "entidade": "Governo do Estado de São Paulo",
-        "area": "Saúde",
+        "id": 3, "entidade": "Governo do Estado de São Paulo", "area": "Saúde",
         "promessa": "Construção de 5 novos Centros de Atendimento Oncológico até o final de 2026.",
         "status_geral": "EM ANDAMENTO",
         "fases_evidencia": {
@@ -55,9 +49,7 @@ BANCO_DE_DADOS_PACTO = [
         }
     },
     {
-        "id": 4,
-        "entidade": "Governo do Estado de São Paulo",
-        "area": "Educação",
+        "id": 4, "entidade": "Governo do Estado de São Paulo", "area": "Educação",
         "promessa": "Ampliação do programa de ensino integral em 300 escolas da rede estadual.",
         "status_geral": "EM ANDAMENTO",
         "fases_evidencia": {
@@ -67,9 +59,7 @@ BANCO_DE_DADOS_PACTO = [
         }
     },
     {
-        "id": 5,
-        "entidade": "Governo do Estado de São Paulo",
-        "area": "Segurança Pública",
+        "id": 5, "entidade": "Governo do Estado de São Paulo", "area": "Segurança Pública",
         "promessa": "Implantação de novas tecnologias de perícia criminal e modernização de laboratórios técnico-científicos.",
         "status_geral": "EM ANDAMENTO",
         "fases_evidencia": {
@@ -79,9 +69,7 @@ BANCO_DE_DADOS_PACTO = [
         }
     },
     {
-        "id": 6,
-        "entidade": "Governo do Estado de São Paulo",
-        "area": "Logística e Transportes",
+        "id": 6, "entidade": "Governo do Estado de São Paulo", "area": "Logística e Transportes",
         "promessa": "Duplicação e recapeamento de 120km de rodovias estaduais estratégicas.",
         "status_geral": "ATRASADA",
         "fases_evidencia": {
@@ -91,9 +79,7 @@ BANCO_DE_DADOS_PACTO = [
         }
     },
     {
-        "id": 7,
-        "entidade": "Governo do Estado de São Paulo",
-        "area": "Desenvolvimento Econômico",
+        "id": 7, "entidade": "Governo do Estado de São Paulo", "area": "Desenvolvimento Econômico",
         "promessa": "Fomento à inovação tecnológica e expansão de incubadoras de empresas.",
         "status_geral": "EM ANDAMENTO",
         "fases_evidencia": {
@@ -103,9 +89,7 @@ BANCO_DE_DADOS_PACTO = [
         }
     },
     {
-        "id": 8,
-        "entidade": "Governo do Estado de São Paulo",
-        "area": "Fazenda e Planejamento",
+        "id": 8, "entidade": "Governo do Estado de São Paulo", "area": "Fazenda e Planejamento",
         "promessa": "Digitalização integral de processos fiscais e ampliação da transparência orçamentária.",
         "status_geral": "CONCLUÍDA",
         "fases_evidencia": {
@@ -115,9 +99,7 @@ BANCO_DE_DADOS_PACTO = [
         }
     },
     {
-        "id": 9,
-        "entidade": "Governo do Estado de São Paulo",
-        "area": "Infraestrutura e Meio Ambiente",
+        "id": 9, "entidade": "Governo do Estado de São Paulo", "area": "Infraestrutura e Meio Ambiente",
         "promessa": "Implantação de parques urbanos e recuperação de matas ciliares.",
         "status_geral": "EM ANDAMENTO",
         "fases_evidencia": {
@@ -127,9 +109,7 @@ BANCO_DE_DADOS_PACTO = [
         }
     },
     {
-        "id": 10,
-        "entidade": "Governo do Estado de São Paulo",
-        "area": "Transportes Metropolitanos",
+        "id": 10, "entidade": "Governo do Estado de São Paulo", "area": "Transportes Metropolitanos",
         "promessa": "Expansão de linhas de trem metropolitano e integração tarifária digital.",
         "status_geral": "EM ANDAMENTO",
         "fases_evidencia": {
@@ -139,9 +119,7 @@ BANCO_DE_DADOS_PACTO = [
         }
     },
     {
-        "id": 11,
-        "entidade": "Governo do Estado de São Paulo",
-        "area": "Administração Penitenciária",
+        "id": 11, "entidade": "Governo do Estado de São Paulo", "area": "Administração Penitenciária",
         "promessa": "Modernização e ampliação de vagas em unidades prisionais com foco em ressocialização.",
         "status_geral": "EM ANDAMENTO",
         "fases_evidencia": {
@@ -151,9 +129,7 @@ BANCO_DE_DADOS_PACTO = [
         }
     },
     {
-        "id": 12,
-        "entidade": "Governo do Estado de São Paulo",
-        "area": "Agricultura e Abastecimento",
+        "id": 12, "entidade": "Governo do Estado de São Paulo", "area": "Agricultura e Abastecimento",
         "promessa": "Programa Melhor Caminho para escoamento da produção agrícola rural.",
         "status_geral": "EM ANDAMENTO",
         "fases_evidencia": {
@@ -163,9 +139,7 @@ BANCO_DE_DADOS_PACTO = [
         }
     },
     {
-        "id": 13,
-        "entidade": "Governo do Estado de São Paulo",
-        "area": "Desenvolvimento Social",
+        "id": 13, "entidade": "Governo do Estado de São Paulo", "area": "Desenvolvimento Social",
         "promessa": "Ampliação de centros de atendimento alimentar e apoio a famílias em vulnerabilidade.",
         "status_geral": "EM ANDAMENTO",
         "fases_evidencia": {
@@ -175,9 +149,7 @@ BANCO_DE_DADOS_PACTO = [
         }
     },
     {
-        "id": 14,
-        "entidade": "Governo do Estado de São Paulo",
-        "area": "Direitos da Pessoa com Deficiência",
+        "id": 14, "entidade": "Governo do Estado de São Paulo", "area": "Direitos da Pessoa com Deficiência",
         "promessa": "Acessibilidade urbana e inclusão digital em órgãos públicos estaduais.",
         "status_geral": "EM ANDAMENTO",
         "fases_evidencia": {
@@ -187,9 +159,7 @@ BANCO_DE_DADOS_PACTO = [
         }
     },
     {
-        "id": 15,
-        "entidade": "Governo do Estado de São Paulo",
-        "area": "Esportes",
+        "id": 15, "entidade": "Governo do Estado de São Paulo", "area": "Esportes",
         "promessa": "Construção de centros esportivos comunitários nos municípios paulistas.",
         "status_geral": "EM ANDAMENTO",
         "fases_evidencia": {
@@ -199,9 +169,7 @@ BANCO_DE_DADOS_PACTO = [
         }
     },
     {
-        "id": 16,
-        "entidade": "Governo do Estado de São Paulo",
-        "area": "Gestão e Governo Digital",
+        "id": 16, "entidade": "Governo do Estado de São Paulo", "area": "Gestão e Governo Digital",
         "promessa": "Centralização de serviços públicos digitais no portal único Poupatempo Digital.",
         "status_geral": "CONCLUÍDA",
         "fases_evidencia": {
@@ -211,9 +179,7 @@ BANCO_DE_DADOS_PACTO = [
         }
     },
     {
-        "id": 17,
-        "entidade": "Governo do Estado de São Paulo",
-        "area": "Habitação",
+        "id": 17, "entidade": "Governo do Estado de São Paulo", "area": "Habitação",
         "promessa": "Entrega de moradias populares e regularização fundiária urbana.",
         "status_geral": "EM ANDAMENTO",
         "fases_evidencia": {
@@ -223,9 +189,7 @@ BANCO_DE_DADOS_PACTO = [
         }
     },
     {
-        "id": 18,
-        "entidade": "Governo do Estado de São Paulo",
-        "area": "Justiça e Cidadania",
+        "id": 18, "entidade": "Governo do Estado de São Paulo", "area": "Justiça e Cidadania",
         "promessa": "Expansão dos Centros de Integração da Cidadania (CIC).",
         "status_geral": "EM ANDAMENTO",
         "fases_evidencia": {
@@ -235,9 +199,7 @@ BANCO_DE_DADOS_PACTO = [
         }
     },
     {
-        "id": 19,
-        "entidade": "Governo do Estado de São Paulo",
-        "area": "Meio Ambiente, Infraestrutura e Logística",
+        "id": 19, "entidade": "Governo do Estado de São Paulo", "area": "Meio Ambiente, Infraestrutura e Logística",
         "promessa": "Transição energética e descarbonização da frota de transporte público.",
         "status_geral": "EM ANDAMENTO",
         "fases_evidencia": {
@@ -247,9 +209,7 @@ BANCO_DE_DADOS_PACTO = [
         }
     },
     {
-        "id": 20,
-        "entidade": "Governo do Estado de São Paulo",
-        "area": "Negócios Internacionais",
+        "id": 20, "entidade": "Governo do Estado de São Paulo", "area": "Negócios Internacionais",
         "promessa": "Atração de investimentos externos e fomento às exportações paulistas.",
         "status_geral": "EM ANDAMENTO",
         "fases_evidencia": {
@@ -259,9 +219,7 @@ BANCO_DE_DADOS_PACTO = [
         }
     },
     {
-        "id": 21,
-        "entidade": "Governo do Estado de São Paulo",
-        "area": "Políticas para a Mulher",
+        "id": 21, "entidade": "Governo do Estado de São Paulo", "area": "Políticas para a Mulher",
         "promessa": "Ampliação de Delegacias da Defesa da Mulher (DDM) 24 horas.",
         "status_geral": "EM ANDAMENTO",
         "fases_evidencia": {
@@ -271,9 +229,7 @@ BANCO_DE_DADOS_PACTO = [
         }
     },
     {
-        "id": 22,
-        "entidade": "Governo do Estado de São Paulo",
-        "area": "Turismo e Viagens",
+        "id": 22, "entidade": "Governo do Estado de São Paulo", "area": "Turismo e Viagens",
         "promessa": "Investimento em infraestrutura de apoio aos Municípios de Interesse Turístico (MIT).",
         "status_geral": "EM ANDAMENTO",
         "fases_evidencia": {
@@ -283,9 +239,7 @@ BANCO_DE_DADOS_PACTO = [
         }
     },
     {
-        "id": 23,
-        "entidade": "Governo do Estado de São Paulo",
-        "area": "Comunicação",
+        "id": 23, "entidade": "Governo do Estado de São Paulo", "area": "Comunicação",
         "promessa": "Transparência ativa e divulgação institucional de utilidade pública.",
         "status_geral": "CONCLUÍDA",
         "fases_evidencia": {
@@ -295,9 +249,7 @@ BANCO_DE_DADOS_PACTO = [
         }
     },
     {
-        "id": 24,
-        "entidade": "Governo do Estado de São Paulo",
-        "area": "Cultura, Economia e Indústria Criativas",
+        "id": 24, "entidade": "Governo do Estado de São Paulo", "area": "Cultura, Economia e Indústria Criativas",
         "promessa": "Revitalização de equipamentos culturais e fomento a festivais regionais.",
         "status_geral": "EM ANDAMENTO",
         "fases_evidencia": {
@@ -311,110 +263,76 @@ BANCO_DE_DADOS_PACTO = [
 # Base de Contratos (Frente 1)
 BANCO_CONTRATOS_PACTO = [
     {
-        "id_contrato": "CT-2026-089",
-        "secretaria": "Saúde",
-        "fornecedor": "OncoTech Equipamentos Médicos Ltda",
-        "cnpj": "12.345.678/0001-99",
+        "id_contrato": "CT-2026-089", "secretaria": "Saúde", "fornecedor": "OncoTech Equipamentos Médicos Ltda", "cnpj": "12.345.678/0001-99",
         "objeto": "Aquisição e instalação de aceleradores lineares e equipamentos de imagem para centros oncológicos.",
-        "valor_inicial": "R$ 18.500.000,00",
-        "valor_atualizado": "R$ 19.200.000,00",
-        "data_assinatura": "2026-02-15",
-        "vigencia": "12 meses",
-        "status": "Vigente",
-        "processo_sei": "001.00043210/2025-88"
+        "valor_inicial": "R$ 18.500.000,00", "valor_atualizado": "R$ 19.200.000,00", "data_assinatura": "2026-02-15", "vigencia": "12 meses", "status": "Vigente", "processo_sei": "001.00043210/2025-88"
     },
     {
-        "id_contrato": "CT-2026-104",
-        "secretaria": "Segurança Pública",
-        "fornecedor": "Forense Tech Soluções em DNA Ltda",
-        "cnpj": "98.765.432/0001-11",
+        "id_contrato": "CT-2026-104", "secretaria": "Segurança Pública", "fornecedor": "Forense Tech Soluções em DNA Ltda", "cnpj": "98.765.432/0001-11",
         "objeto": "Fornecimento de reagentes de alta precisão e modernização de hardwares para cromatografia gasosa.",
-        "valor_inicial": "R$ 6.800.000,00",
-        "valor_atualizado": "R$ 6.800.000,00",
-        "data_assinatura": "2026-03-01",
-        "vigencia": "24 meses",
-        "status": "Vigente",
-        "processo_sei": "052.00011223/2026-10"
+        "valor_inicial": "R$ 6.800.000,00", "valor_atualizado": "R$ 6.800.000,00", "data_assinatura": "2026-03-01", "vigencia": "24 meses", "status": "Vigente", "processo_sei": "052.00011223/2026-10"
     },
     {
-        "id_contrato": "CT-2026-210",
-        "secretaria": "Logística e Transportes",
-        "fornecedor": "Rodovias Paulista Construções S.A.",
-        "cnpj": "45.123.789/0001-50",
+        "id_contrato": "CT-2026-210", "secretaria": "Logística e Transportes", "fornecedor": "Rodovias Paulista Construções S.A.", "cnpj": "45.123.789/0001-50",
         "objeto": "Serviços de engenharia civil para duplicação e recapeamento asfáltico em trecho prioritário.",
-        "valor_inicial": "R$ 45.000.000,00",
-        "valor_atualizado": "R$ 48.500.000,00",
-        "data_assinatura": "2025-11-10",
-        "vigencia": "18 meses",
-        "status": "Em Execução com Termo Aditivo",
-        "processo_sei": "108.00099887/2025-45"
+        "valor_inicial": "R$ 45.000.000,00", "valor_atualizado": "R$ 48.500.000,00", "data_assinatura": "2025-11-10", "vigencia": "18 meses", "status": "Em Execução com Termo Aditivo", "processo_sei": "108.00099887/2025-45"
     }
 ]
 
-# Nova Base de Dados: Obras Públicas com Geolocalização (Frente 2)
+# Base de Obras (Frente 2)
 BANCO_OBRAS_PACTO = [
     {
-        "id_obra": "OBRA-2026-01",
-        "secretaria": "Saúde",
-        "nome": "Centro de Atendimento Oncológico - Unidade Capital",
+        "id_obra": "OBRA-2026-01", "secretaria": "Saúde", "nome": "Centro de Atendimento Oncológico - Unidade Capital",
         "descricao": "Construção de infraestrutura hospitalar especializada em oncologia com 12.000m².",
-        "localizacao": "São Paulo - SP (Zona Sul)",
-        "latitude": -23.588056,
-        "longitude": -46.632222,
-        "valor_obra": "R$ 22.000.000,00",
-        "data_inicio": "2026-01-10",
-        "previsao_termino": "2026-12-20",
-        "percentual_execucao": "45%",
-        "status": "Em Andamento",
-        "historico": [
-            "01/2026 - Início da fundação e terraplanagem",
-            "05/2026 - Conclusão da estrutura de concreto",
-            "08/2026 - Instalação de redes hidráulicas e elétricas"
-        ]
+        "localizacao": "São Paulo - SP (Zona Sul)", "latitude": -23.588056, "longitude": -46.632222,
+        "valor_obra": "R$ 22.000.000,00", "data_inicio": "2026-01-10", "previsao_termino": "2026-12-20", "percentual_execucao": "45%", "status": "Em Andamento",
+        "historico": ["01/2026 - Início da fundação e terraplanagem", "05/2026 - Conclusão da estrutura de concreto", "08/2026 - Instalação de redes hidráulicas e elétricas"]
     },
     {
-        "id_obra": "OBRA-2026-02",
-        "secretaria": "Logística e Transportes",
-        "nome": "Duplicação Rodovia Estadual SP-280 (Trecho Norte)",
+        "id_obra": "OBRA-2026-02", "secretaria": "Logística e Transportes", "nome": "Duplicação Rodovia Estadual SP-280 (Trecho Norte)",
         "descricao": "Serviços de engenharia para duplicação de pista, pavimentação e sinalização viária.",
-        "localizacao": "Região de Sorocaba - SP",
-        "latitude": -23.501667,
-        "longitude": -47.458333,
-        "valor_obra": "R$ 48.500.000,00",
-        "data_inicio": "2025-11-15",
-        "previsao_termino": "2026-10-30",
-        "percentual_execucao": "35%",
-        "status": "Em Andamento com Atenção",
-        "historico": [
-            "11/2025 - Ordem de serviço emitida",
-            "03/2026 - Executados 15km de pavimentação",
-            "07/2026 - Retificação ambiental em trecho de manancial"
-        ]
+        "localizacao": "Região de Sorocaba - SP", "latitude": -23.501667, "longitude": -47.458333,
+        "valor_obra": "R$ 48.500.000,00", "data_inicio": "2025-11-15", "previsao_termino": "2026-10-30", "percentual_execucao": "35%", "status": "Em Andamento com Atenção",
+        "historico": ["11/2025 - Ordem de serviço emitida", "03/2026 - Executados 15km de pavimentação", "07/2026 - Retificação ambiental em trecho de manancial"]
+    }
+]
+
+# Nova Base: Sistema de Alertas Analíticos Avançados (Frente 3)
+BANCO_ALERTAS_PACTO = [
+    {
+        "id_alerta": "ALERTA-001",
+        "severidade": "CRÍTICO",
+        "entidade_relacionada": "Logística e Transportes",
+        "titulo": "Atraso Crítico em Cronograma de Obra Rodoviária",
+        "descricao": "O ritmo de execução física da obra SP-280 encontra-se abaixo do patamar contratual esperado para o período.",
+        "data_emissao": "2026-09-10",
+        "status": "Ativo"
+    },
+    {
+        "id_alerta": "ALERTA-002",
+        "severidade": "ATENÇÃO",
+        "entidade_relacionada": "Saúde",
+        "titulo": "Variação Relevante em Termo Aditivo de Contrato",
+        "descricao": "Identificada variação superior a 3.7% no valor atualizado do contrato de equipamentos oncológicos.",
+        "data_emissao": "2026-09-12",
+        "status": "Ativo"
+    },
+    {
+        "id_alerta": "ALERTA-003",
+        "severidade": "INFORMATIVO",
+        "entidade_relacionada": "Fazenda e Planejamento",
+        "titulo": "Meta de Transparência Fiscal Cumprida",
+        "descricao": "A secretaria atingiu 100% de conformidade na digitalização de processos fiscais previstos no PPA.",
+        "data_emissao": "2026-09-14",
+        "status": "Resolvido"
     }
 ]
 
 FONTES_OFICIAIS_REGISTRADAS = [
-    {
-        "id_fonte": "SRC-001",
-        "nome": "Portal da Transparência do Estado de São Paulo",
-        "tipo": "Orçamento e Execução",
-        "status": "Ativo e Sincronizado",
-        "ultima_checagem": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    },
-    {
-        "id_fonte": "SRC-002",
-        "nome": "Portal Nacional de Contratações Públicas (PNCP)",
-        "tipo": "Contratos e Licitações",
-        "status": "Ativo e Sincronizado",
-        "ultima_checagem": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    },
-    {
-        "id_fonte": "SRC-003",
-        "nome": "Sistema de Acompanhamento de Obras Públicas (SIGEO)",
-        "tipo": "Geolocalização e Engenharia",
-        "status": "Ativo e Sincronizado",
-        "ultima_checagem": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    }
+    {"id_fonte": "SRC-001", "nome": "Portal da Transparência do Estado de São Paulo", "tipo": "Orçamento e Execução", "status": "Ativo", "ultima_checagem": datetime.now().strftime("%Y-%m-%d %H:%M:%S")},
+    {"id_fonte": "SRC-002", "nome": "Portal Nacional de Contratações Públicas (PNCP)", "tipo": "Contratos e Licitações", "status": "Ativo", "ultima_checagem": datetime.now().strftime("%Y-%m-%d %H:%M:%S")},
+    {"id_fonte": "SRC-003", "nome": "Sistema de Acompanhamento de Obras (SIGEO)", "tipo": "Geolocalização", "status": "Ativo", "ultima_checagem": datetime.now().strftime("%Y-%m-%d %H:%M:%S")},
+    {"id_fonte": "SRC-004", "nome": "Motor Analítico Estatístico do PACTO", "tipo": "Auditoria de Regras", "status": "Ativo", "ultima_checagem": datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 ]
 
 def aplicar_motor_analitico(promessa_item: dict) -> dict:
@@ -423,20 +341,11 @@ def aplicar_motor_analitico(promessa_item: dict) -> dict:
     status = promessa_item["status_geral"]
 
     if status == "ATRASADA" and execucao_valor < 30:
-        alerta = {
-            "corFundo": "#FEE2E2", "corTexto": "#DC2626",
-            "mensagem": "🚨 Motor Analítico PACTO: Alerta Crítico. Ritmo de entrega incompatível com o prazo estipulado."
-        }
+        alerta = {"corFundo": "#FEE2E2", "corTexto": "#DC2626", "mensagem": "🚨 Motor Analítico PACTO: Alerta Crítico. Ritmo de entrega incompatível com o prazo estipulado."}
     elif execucao_valor < 50 and status != "CONCLUÍDA":
-        alerta = {
-            "corFundo": "#FEF3C7", "corTexto": "#D97706",
-            "mensagem": "⚠️ Motor Analítico PACTO: Atenção moderada. Execução física abaixo de 50% da meta global."
-        }
+        alerta = {"corFundo": "#FEF3C7", "corTexto": "#D97706", "mensagem": "⚠️ Motor Analítico PACTO: Atenção moderada. Execução física abaixo de 50% da meta global."}
     else:
-        alerta = {
-            "corFundo": "#D1FAE5", "corTexto": "#047857",
-            "mensagem": "✅ Motor Analítico PACTO: Execução dentro dos parâmetros esperados de eficiência."
-        }
+        alerta = {"corFundo": "#D1FAE5", "corTexto": "#047857", "mensagem": "✅ Motor Analítico PACTO: Execução dentro dos parâmetros esperados de eficiência."}
 
     item_com_alerta = dict(promessa_item)
     item_com_alerta["alerta_analitico"] = alerta
@@ -444,20 +353,24 @@ def aplicar_motor_analitico(promessa_item: dict) -> dict:
 
 @app.get("/", summary="Raiz da API")
 def raiz():
-    return {"sistema": "API PACTO - Módulo de Obras com Geolocalização Ativo", "versao": "1.8.0"}
+    return {"sistema": "API PACTO - Módulo de Alertas Analíticos Avançados Ativo", "versao": "1.9.0"}
 
-@app.get("/api/v1/promessas", summary="Listar promessas de todas as secretarias")
+@app.get("/api/v1/promessas", summary="Listar promessas")
 def listar_promessas():
     return [aplicar_motor_analitico(item) for item in BANCO_DE_DADOS_PACTO]
 
-@app.get("/api/v1/contratos", summary="Listar Contratos e Fornecedores")
+@app.get("/api/v1/contratos", summary="Listar Contratos")
 def listar_contratos():
     return BANCO_CONTRATOS_PACTO
 
-@app.get("/api/v1/obras", summary="Listar Obras Públicas com Geolocalização")
+@app.get("/api/v1/obras", summary="Listar Obras Públicas")
 def listar_obras():
-    """Retorna a base de obras públicas com coordenadas geográficas e cronologia."""
     return BANCO_OBRAS_PACTO
+
+@app.get("/api/v1/alertas", summary="Listar Alertas Analíticos Avançados")
+def listar_alertas():
+    """Retorna o sistema de alertas analíticos gerados pelo motor estatístico do PACTO."""
+    return BANCO_ALERTAS_PACTO
 
 @app.get("/api/v1/indicadores", summary="Indicadores Globais Consolidados")
 def obter_indicadores_globais():
@@ -471,6 +384,7 @@ def obter_indicadores_globais():
         "total_atrasadas": atrasadas,
         "total_contratos_monitorados": len(BANCO_CONTRATOS_PACTO),
         "total_obras_geolocalizadas": len(BANCO_OBRAS_PACTO),
+        "total_alertas_analiticos": len(BANCO_ALERTAS_PACTO),
         "fontes_integradas_ativas": len(FONTES_OFICIAIS_REGISTRADAS)
     }
 
