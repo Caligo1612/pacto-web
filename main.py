@@ -5,8 +5,8 @@ from datetime import datetime
 
 app = FastAPI(
     title="API PACTO - Inteligência Cívica",
-    description="Backend oficial da plataforma PACTO com Validações Finas e Tratamento de Erros.",
-    version="2.0.0"
+    description="Backend oficial da plataforma PACTO com Rastreador do Plano de Governo.",
+    version="2.1.0"
 )
 
 app.add_middleware(
@@ -17,10 +17,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# =====================================================================
-# 1. MODELOS DE VALIDAÇÃO (PYDANTIC)
-# Garantem que a API responda sempre no formato exato esperado
-# =====================================================================
 class IndicadoresGlobaisModel(BaseModel):
     total_metas: int
     media_execucao_global: str
@@ -31,13 +27,14 @@ class IndicadoresGlobaisModel(BaseModel):
     fontes_integradas_ativas: int
 
 # =====================================================================
-# 2. BANCOS DE DADOS (Preservados: 24 Secretarias, Contratos, Obras e Alertas)
+# BANCO DE DADOS: 24 SECRETARIAS (Agora com Referência Oficial ao Plano)
 # =====================================================================
 BANCO_DE_DADOS_PACTO = [
     {
         "id": 1, "entidade": "Governo do Estado de São Paulo", "area": "Casa Civil",
         "promessa": "Coordenação estratégica de políticas públicas e articulação interinstitucional.",
         "status_geral": "EM ANDAMENTO",
+        "referencia_plano": {"eixo": "Gestão Pública e Governo Digital", "pagina": "Pág. 38"},
         "fases_evidencia": {
             "planejamento": {"origem": "Diretrizes de Governança", "meta_estipulada": "100% dos pactos integrados"},
             "orcamento": {"dotacao_atualizada": "R$ 50.000.000,00", "empenhado": "R$ 35.000.000,00"},
@@ -48,6 +45,7 @@ BANCO_DE_DADOS_PACTO = [
         "id": 2, "entidade": "Governo do Estado de São Paulo", "area": "Secretaria de Governo",
         "promessa": "Modernização do atendimento municipal e parcerias estratégicas.",
         "status_geral": "EM ANDAMENTO",
+        "referencia_plano": {"eixo": "Gestão Pública e Governo Digital", "pagina": "Pág. 39"},
         "fases_evidencia": {
             "planejamento": {"origem": "Plano de Apoio aos Municípios", "meta_estipulada": "645 municípios atendidos"},
             "orcamento": {"dotacao_atualizada": "R$ 80.000.000,00", "empenhado": "R$ 60.000.000,00"},
@@ -58,6 +56,7 @@ BANCO_DE_DADOS_PACTO = [
         "id": 3, "entidade": "Governo do Estado de São Paulo", "area": "Saúde",
         "promessa": "Construção de 5 novos Centros de Atendimento Oncológico até o final de 2026.",
         "status_geral": "EM ANDAMENTO",
+        "referencia_plano": {"eixo": "Desenvolvimento Social - Saúde", "pagina": "Pág. 9"},
         "fases_evidencia": {
             "planejamento": {"origem": "Plano de Governo Registrado no TSE", "meta_estipulada": "5 Unidades entregues"},
             "orcamento": {"dotacao_atualizada": "R$ 45.000.000,00", "empenhado": "R$ 30.000.000,00"},
@@ -68,6 +67,7 @@ BANCO_DE_DADOS_PACTO = [
         "id": 4, "entidade": "Governo do Estado de São Paulo", "area": "Educação",
         "promessa": "Ampliação do programa de ensino integral em 300 escolas da rede estadual.",
         "status_geral": "EM ANDAMENTO",
+        "referencia_plano": {"eixo": "Desenvolvimento Social - Educação", "pagina": "Pág. 6"},
         "fases_evidencia": {
             "planejamento": {"origem": "Plano Estadual de Educação", "meta_estipulada": "300 escolas integradas"},
             "orcamento": {"dotacao_atualizada": "R$ 90.000.000,00", "empenhado": "R$ 75.000.000,00"},
@@ -78,6 +78,7 @@ BANCO_DE_DADOS_PACTO = [
         "id": 5, "entidade": "Governo do Estado de São Paulo", "area": "Segurança Pública",
         "promessa": "Implantação de novas tecnologias de perícia criminal e modernização de laboratórios técnico-científicos.",
         "status_geral": "EM ANDAMENTO",
+        "referencia_plano": {"eixo": "Segurança Pública", "pagina": "Pág. 13"},
         "fases_evidencia": {
             "planejamento": {"origem": "Diretrizes Estratégicas da Polícia Técnico-Científica", "meta_estipulada": "Modernização de núcleos regionais"},
             "orcamento": {"dotacao_atualizada": "R$ 15.000.000,00", "empenhado": "R$ 12.500.000,00"},
@@ -88,6 +89,7 @@ BANCO_DE_DADOS_PACTO = [
         "id": 6, "entidade": "Governo do Estado de São Paulo", "area": "Logística e Transportes",
         "promessa": "Duplicação e recapeamento de 120km de rodovias estaduais estratégicas.",
         "status_geral": "ATRASADA",
+        "referencia_plano": {"eixo": "Infraestrutura e Mobilidade Urbana", "pagina": "Pág. 21"},
         "fases_evidencia": {
             "planejamento": {"origem": "Programa Rodoviário de Longo Prazo", "meta_estipulada": "120 km duplicados"},
             "orcamento": {"dotacao_atualizada": "R$ 120.000.000,00", "empenhado": "R$ 45.000.000,00"},
@@ -98,6 +100,7 @@ BANCO_DE_DADOS_PACTO = [
         "id": 7, "entidade": "Governo do Estado de São Paulo", "area": "Desenvolvimento Econômico",
         "promessa": "Fomento à inovação tecnológica e expansão de incubadoras de empresas.",
         "status_geral": "EM ANDAMENTO",
+        "referencia_plano": {"eixo": "Desenvolvimento Econômico e Inovação", "pagina": "Pág. 30"},
         "fases_evidencia": {
             "planejamento": {"origem": "Plano SP Inovação", "meta_estipulada": "20 polos tecnológicos"},
             "orcamento": {"dotacao_atualizada": "R$ 40.000.000,00", "empenhado": "R$ 28.000.000,00"},
@@ -108,6 +111,7 @@ BANCO_DE_DADOS_PACTO = [
         "id": 8, "entidade": "Governo do Estado de São Paulo", "area": "Fazenda e Planejamento",
         "promessa": "Digitalização integral de processos fiscais e ampliação da transparência orçamentária.",
         "status_geral": "CONCLUÍDA",
+        "referencia_plano": {"eixo": "Compromisso Fiscal e Tributário", "pagina": "Pág. 41"},
         "fases_evidencia": {
             "planejamento": {"origem": "Programa de Gestão Fiscal", "meta_estipulada": "100% processos despapelizados"},
             "orcamento": {"dotacao_atualizada": "R$ 30.000.000,00", "empenhado": "R$ 30.000.000,00"},
@@ -118,6 +122,7 @@ BANCO_DE_DADOS_PACTO = [
         "id": 9, "entidade": "Governo do Estado de São Paulo", "area": "Infraestrutura e Meio Ambiente",
         "promessa": "Implantação de parques urbanos e recuperação de matas ciliares.",
         "status_geral": "EM ANDAMENTO",
+        "referencia_plano": {"eixo": "Sustentabilidade e Recursos Hídricos", "pagina": "Pág. 26"},
         "fases_evidencia": {
             "planejamento": {"origem": "Plano Verde SP", "meta_estipulada": "15 novos parques estaduais"},
             "orcamento": {"dotacao_atualizada": "R$ 60.000.000,00", "empenhado": "R$ 40.000.000,00"},
@@ -128,6 +133,7 @@ BANCO_DE_DADOS_PACTO = [
         "id": 10, "entidade": "Governo do Estado de São Paulo", "area": "Transportes Metropolitanos",
         "promessa": "Expansão de linhas de trem metropolitano e integração tarifária digital.",
         "status_geral": "EM ANDAMENTO",
+        "referencia_plano": {"eixo": "Infraestrutura e Mobilidade Urbana", "pagina": "Pág. 22"},
         "fases_evidencia": {
             "planejamento": {"origem": "Diretrizes Metropolitanas", "meta_estipulada": "15km de novas vias"},
             "orcamento": {"dotacao_atualizada": "R$ 250.000.000,00", "empenhado": "R$ 180.000.000,00"},
@@ -138,6 +144,7 @@ BANCO_DE_DADOS_PACTO = [
         "id": 11, "entidade": "Governo do Estado de São Paulo", "area": "Administração Penitenciária",
         "promessa": "Modernização e ampliação de vagas em unidades prisionais com foco em ressocialização.",
         "status_geral": "EM ANDAMENTO",
+        "referencia_plano": {"eixo": "Segurança Pública - Prisional", "pagina": "Pág. 15"},
         "fases_evidencia": {
             "planejamento": {"origem": "Plano Diretor Prisional", "meta_estipulada": "5000 novas vagas humanizadas"},
             "orcamento": {"dotacao_atualizada": "R$ 100.000.000,00", "empenhado": "R$ 70.000.000,00"},
@@ -148,6 +155,7 @@ BANCO_DE_DADOS_PACTO = [
         "id": 12, "entidade": "Governo do Estado de São Paulo", "area": "Agricultura e Abastecimento",
         "promessa": "Programa Melhor Caminho para escoamento da produção agrícola rural.",
         "status_geral": "EM ANDAMENTO",
+        "referencia_plano": {"eixo": "Agronegócio", "pagina": "Pág. 32"},
         "fases_evidencia": {
             "planejamento": {"origem": "Diretrizes de Apoio ao Produtor", "meta_estipulada": "500 km de estradas rurais recuperadas"},
             "orcamento": {"dotacao_atualizada": "R$ 70.000.000,00", "empenhado": "R$ 50.000.000,00"},
@@ -158,6 +166,7 @@ BANCO_DE_DADOS_PACTO = [
         "id": 13, "entidade": "Governo do Estado de São Paulo", "area": "Desenvolvimento Social",
         "promessa": "Ampliação de centros de atendimento alimentar e apoio a famílias em vulnerabilidade.",
         "status_geral": "EM ANDAMENTO",
+        "referencia_plano": {"eixo": "População Vulnerável", "pagina": "Pág. 17"},
         "fases_evidencia": {
             "planejamento": {"origem": "Plano SP Solidária", "meta_estipulada": "100 novos restaurantes populares"},
             "orcamento": {"dotacao_atualizada": "R$ 80.000.000,00", "empenhado": "R$ 65.000.000,00"},
@@ -168,6 +177,7 @@ BANCO_DE_DADOS_PACTO = [
         "id": 14, "entidade": "Governo do Estado de São Paulo", "area": "Direitos da Pessoa com Deficiência",
         "promessa": "Acessibilidade urbana e inclusão digital em órgãos públicos estaduais.",
         "status_geral": "EM ANDAMENTO",
+        "referencia_plano": {"eixo": "Desenvolvimento Social", "pagina": "Pág. 12"},
         "fases_evidencia": {
             "planejamento": {"origem": "Diretrizes de Acessibilidade", "meta_estipulada": "100% de adequação predial pública"},
             "orcamento": {"dotacao_atualizada": "R$ 25.000.000,00", "empenhado": "R$ 18.000.000,00"},
@@ -178,6 +188,7 @@ BANCO_DE_DADOS_PACTO = [
         "id": 15, "entidade": "Governo do Estado de São Paulo", "area": "Esportes",
         "promessa": "Construção de centros esportivos comunitários nos municípios paulistas.",
         "status_geral": "EM ANDAMENTO",
+        "referencia_plano": {"eixo": "Esporte", "pagina": "Pág. 36"},
         "fases_evidencia": {
             "planejamento": {"origem": "Plano SP Esportes", "meta_estipulada": "50 arenas esportivas entregues"},
             "orcamento": {"dotacao_atualizada": "R$ 40.000.000,00", "empenhado": "R$ 30.000.000,00"},
@@ -188,6 +199,7 @@ BANCO_DE_DADOS_PACTO = [
         "id": 16, "entidade": "Governo do Estado de São Paulo", "area": "Gestão e Governo Digital",
         "promessa": "Centralização de serviços públicos digitais no portal único Poupatempo Digital.",
         "status_geral": "CONCLUÍDA",
+        "referencia_plano": {"eixo": "Gestão Pública e Governo Digital", "pagina": "Pág. 39"},
         "fases_evidencia": {
             "planejamento": {"origem": "Plano SP Sem Papel", "meta_estipulada": "300 serviços digitalizados"},
             "orcamento": {"dotacao_atualizada": "R$ 35.000.000,00", "empenhado": "R$ 35.000.000,00"},
@@ -198,6 +210,7 @@ BANCO_DE_DADOS_PACTO = [
         "id": 17, "entidade": "Governo do Estado de São Paulo", "area": "Habitação",
         "promessa": "Entrega de moradias populares e regularização fundiária urbana.",
         "status_geral": "EM ANDAMENTO",
+        "referencia_plano": {"eixo": "Habitação e Regularização", "pagina": "Pág. 23"},
         "fases_evidencia": {
             "planejamento": {"origem": "Plano Habitacional SP", "meta_estipulada": "40 mil moradias entregues"},
             "orcamento": {"dotacao_atualizada": "R$ 300.000.000,00", "empenhado": "R$ 210.000.000,00"},
@@ -208,6 +221,7 @@ BANCO_DE_DADOS_PACTO = [
         "id": 18, "entidade": "Governo do Estado de São Paulo", "area": "Justiça e Cidadania",
         "promessa": "Expansão dos Centros de Integração da Cidadania (CIC).",
         "status_geral": "EM ANDAMENTO",
+        "referencia_plano": {"eixo": "Cidadania e Justiça", "pagina": "Pág. 16"},
         "fases_evidencia": {
             "planejamento": {"origem": "Diretrizes de Cidadania", "meta_estipulada": "5 novas unidades CIC"},
             "orcamento": {"dotacao_atualizada": "R$ 20.000.000,00", "empenhado": "R$ 14.000.000,00"},
@@ -218,6 +232,7 @@ BANCO_DE_DADOS_PACTO = [
         "id": 19, "entidade": "Governo do Estado de São Paulo", "area": "Meio Ambiente, Infraestrutura e Logística",
         "promessa": "Transição energética e descarbonização da frota de transporte público.",
         "status_geral": "EM ANDAMENTO",
+        "referencia_plano": {"eixo": "Sustentabilidade", "pagina": "Pág. 29"},
         "fases_evidencia": {
             "planejamento": {"origem": "Plano SP Carbono Zero", "meta_estipulada": "20% da frota eletrificada"},
             "orcamento": {"dotacao_atualizada": "R$ 150.000.000,00", "empenhado": "R$ 90.000.000,00"},
@@ -228,6 +243,7 @@ BANCO_DE_DADOS_PACTO = [
         "id": 20, "entidade": "Governo do Estado de São Paulo", "area": "Negócios Internacionais",
         "promessa": "Atração de investimentos externos e fomento às exportações paulistas.",
         "status_geral": "EM ANDAMENTO",
+        "referencia_plano": {"eixo": "Desenvolvimento Econômico", "pagina": "Pág. 31"},
         "fases_evidencia": {
             "planejamento": {"origem": "Plano SP Global", "meta_estipulada": "15 missões internacionais e feirões"},
             "orcamento": {"dotacao_atualizada": "R$ 15.000.000,00", "empenhado": "R$ 12.000.000,00"},
@@ -238,6 +254,7 @@ BANCO_DE_DADOS_PACTO = [
         "id": 21, "entidade": "Governo do Estado de São Paulo", "area": "Políticas para a Mulher",
         "promessa": "Ampliação de Delegacias da Defesa da Mulher (DDM) 24 horas.",
         "status_geral": "EM ANDAMENTO",
+        "referencia_plano": {"eixo": "Segurança Pública - Mulher", "pagina": "Pág. 17"},
         "fases_evidencia": {
             "planejamento": {"origem": "Plano SP Mulher Segura", "meta_estipulada": "40 DDMs 24h implementadas"},
             "orcamento": {"dotacao_atualizada": "R$ 30.000.000,00", "empenhado": "R$ 24.000.000,00"},
@@ -248,6 +265,7 @@ BANCO_DE_DADOS_PACTO = [
         "id": 22, "entidade": "Governo do Estado de São Paulo", "area": "Turismo e Viagens",
         "promessa": "Investimento em infraestrutura de apoio aos Municípios de Interesse Turístico (MIT).",
         "status_geral": "EM ANDAMENTO",
+        "referencia_plano": {"eixo": "Turismo", "pagina": "Pág. 37"},
         "fases_evidencia": {
             "planejamento": {"origem": "Plano Estadual de Turismo", "meta_estipulada": "140 municípios contemplados"},
             "orcamento": {"dotacao_atualizada": "R$ 90.000.000,00", "empenhado": "R$ 70.000.000,00"},
@@ -258,6 +276,7 @@ BANCO_DE_DADOS_PACTO = [
         "id": 23, "entidade": "Governo do Estado de São Paulo", "area": "Comunicação",
         "promessa": "Transparência ativa e divulgação institucional de utilidade pública.",
         "status_geral": "CONCLUÍDA",
+        "referencia_plano": {"eixo": "Gestão Pública", "pagina": "Pág. 38"},
         "fases_evidencia": {
             "planejamento": {"origem": "Plano de Comunicação Cívica", "meta_estipulada": "Campanhas educativas contínuas"},
             "orcamento": {"dotacao_atualizada": "R$ 40.000.000,00", "empenhado": "R$ 40.000.000,00"},
@@ -268,6 +287,7 @@ BANCO_DE_DADOS_PACTO = [
         "id": 24, "entidade": "Governo do Estado de São Paulo", "area": "Cultura, Economia e Indústria Criativas",
         "promessa": "Revitalização de equipamentos culturais e fomento a festivais regionais.",
         "status_geral": "EM ANDAMENTO",
+        "referencia_plano": {"eixo": "Cultura e Economia Criativa", "pagina": "Pág. 34"},
         "fases_evidencia": {
             "planejamento": {"origem": "Plano SP Criativa", "meta_estipulada": "30 museus e teatros reformados"},
             "orcamento": {"dotacao_atualizada": "R$ 70.000.000,00", "empenhado": "R$ 50.000.000,00"},
@@ -339,9 +359,6 @@ FONTES_OFICIAIS_REGISTRADAS = [
     {"id_fonte": "SRC-004", "nome": "Motor PACTO", "tipo": "Auditoria de Regras", "status": "Ativo", "ultima_checagem": datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 ]
 
-# =====================================================================
-# 3. LÓGICA DO MOTOR ANALÍTICO
-# =====================================================================
 def aplicar_motor_analitico(promessa_item: dict) -> dict:
     exec_str = promessa_item["fases_evidencia"]["execucao"]["percentual_execucao"].replace("%", "")
     execucao_valor = int(exec_str)
@@ -358,27 +375,19 @@ def aplicar_motor_analitico(promessa_item: dict) -> dict:
     item_com_alerta["alerta_analitico"] = alerta
     return item_com_alerta
 
-# =====================================================================
-# 4. ROTAS DA API COM VALIDAÇÃO E TRATAMENTO DE ERROS (OPÇÃO B)
-# =====================================================================
 @app.get("/", summary="Raiz da API")
 def raiz():
-    return {"sistema": "API PACTO - Validações e Tratamento de Erros Ativos", "versao": "2.0.0"}
+    return {"sistema": "API PACTO - Validações e Tratamento de Erros Ativos", "versao": "2.1.0"}
 
 @app.get("/api/v1/promessas", summary="Listar todas as promessas")
 def listar_promessas():
     return [aplicar_motor_analitico(item) for item in BANCO_DE_DADOS_PACTO]
 
-# NOVA ROTA (Tratamento de Erro): Filtro robusto por Secretaria
 @app.get("/api/v1/promessas/{area}", summary="Filtrar promessas por área com Validação")
 def filtrar_promessas_por_area(area: str = Path(..., description="Nome exato da Secretaria")):
-    """Busca as promessas de uma secretaria. Retorna erro 404 seguro se não existir."""
     resultados = [aplicar_motor_analitico(item) for item in BANCO_DE_DADOS_PACTO if item["area"].lower() == area.lower()]
-    
-    # Tratamento de Erro Seguro (Impede que a aplicação quebre)
     if not resultados:
         raise HTTPException(status_code=404, detail=f"Erro PACTO: A secretaria '{area}' não foi encontrada na nossa base de dados.")
-    
     return resultados
 
 @app.get("/api/v1/contratos", summary="Listar Contratos")
@@ -393,7 +402,6 @@ def listar_obras():
 def listar_alertas():
     return BANCO_ALERTAS_PACTO
 
-# ROTA COM PYDANTIC (Garante o formato exato da resposta para não quebrar o site/app)
 @app.get("/api/v1/indicadores", response_model=IndicadoresGlobaisModel, summary="Indicadores Globais Seguros")
 def obter_indicadores_globais():
     total = len(BANCO_DE_DADOS_PACTO)
@@ -401,7 +409,6 @@ def obter_indicadores_globais():
     media = round(soma / total) if total > 0 else 0
     atrasadas = sum(1 for i in BANCO_DE_DADOS_PACTO if i["status_geral"] == "ATRASADA")
     
-    # O Pydantic irá forçar os tipos (int, string) definidos na classe IndicadoresGlobaisModel
     return {
         "total_metas": total,
         "media_execucao_global": f"{media}%",

@@ -234,6 +234,14 @@ export default function Home() {
       {/* RENDERIZAÇÃO DA ABA: METAS E PROMESSAS */}
       {abaAtiva === 'metas' && promessasFiltradas.map((dados) => (
         <div key={dados.id} style={{ backgroundColor: 'white', padding: '30px', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', marginBottom: '24px', border: '1px solid #E2E8F0' }}>
+          
+          {/* Selo Oficial de Rastreabilidade */}
+          {dados.referencia_plano && (
+            <div style={{ display: 'inline-flex', alignItems: 'center', backgroundColor: '#EFF6FF', color: '#1E3A8A', padding: '6px 12px', borderRadius: '8px', fontSize: '13px', fontWeight: 'bold', marginBottom: '16px', border: '1px solid #BFDBFE' }}>
+              📘 Previsto no Plano de Governo Oficial - Eixo: {dados.referencia_plano.eixo} ({dados.referencia_plano.pagina})
+            </div>
+          )}
+
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap', gap: '10px' }}>
             <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#0F172A', backgroundColor: '#F1F5F9', padding: '6px 12px', borderRadius: '6px', textTransform: 'uppercase' }}>
               {dados.entidade} • {dados.area}
@@ -243,11 +251,13 @@ export default function Home() {
             </span>
           </div>
           <h2 style={{ color: '#1E293B', fontSize: '20px', marginBottom: '16px', lineHeight: '1.4' }}>{dados.promessa}</h2>
+          
           {dados.alerta_analitico && (
             <div style={{ backgroundColor: dados.alerta_analitico.corFundo, color: dados.alerta_analitico.corTexto, padding: '14px', borderRadius: '8px', marginBottom: '20px', border: `1px solid ${dados.alerta_analitico.corTexto}`, fontSize: '14px', fontWeight: 'bold' }}>
               {dados.alerta_analitico.mensagem}
             </div>
           )}
+          
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '16px' }}>
             <div style={{ backgroundColor: '#F8FAFC', padding: '16px', borderRadius: '8px', borderLeft: '4px solid #3B82F6' }}>
               <h3 style={{ fontSize: '14px', color: '#334155', marginBottom: '8px', fontWeight: 'bold' }}>📋 Planejamento</h3>
@@ -275,7 +285,6 @@ export default function Home() {
           </div>
         </div>
       ))}
-
       {/* RENDERIZAÇÃO DA ABA: CONTRATOS E FORNECEDORES */}
       {abaAtiva === 'contratos' && contratosFiltrados.map((item) => (
         <div key={item.id_contrato} style={{ backgroundColor: 'white', padding: '30px', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', marginBottom: '24px', border: '1px solid #E2E8F0' }}>
