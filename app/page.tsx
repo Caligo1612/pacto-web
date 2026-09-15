@@ -32,19 +32,33 @@ export default function Home() {
   });
 
   // =====================================================================
-  // 3. FUNÇÃO DE EXPORTAÇÃO PARA CSV (Opção A)
+  // 3. CÁLCULO DOS INDICADORES DE DESEMPENHO (Opção B)
+  // =====================================================================
+  const totalPromessas = listaPromessas.length;
+  
+  // Calcula a média do percentual de execução de todas as promessas cadastradas
+  const somaPercentuais = listaPromessas.reduce((acumulado, atual) => {
+    const valorNumerico = parseInt(atual.fases_evidencia.execucao.percentual_execucao.replace('%', '')) || 0;
+    return acumulado + valorNumerico;
+  }, 0);
+  
+  const mediaExecucaoGlobal = totalPromessas > 0 ? Math.round(somaPercentuais / totalPromessas) : 0;
+
+  // Contagem por status geral
+  const totalAtrasadas = listaPromessas.filter(i => i.status_geral === 'ATRASADA').length;
+  const totalEmAndamento = listaPromessas.filter(i => i.status_geral === 'EM ANDAMENTO').length;
+
+  // =====================================================================
+  // 4. FUNÇÃO DE EXPORTAÇÃO PARA CSV (Opção A)
   // =====================================================================
   const exportarParaCSV = () => {
-    // Cabeçalho do arquivo CSV
     let csvContent = "data:text/csv;charset=utf-8,ID;Entidade;Área;Promessa;Status;Orçamento Atualizado;Percentual Execução\n";
 
-    // Adiciona cada promessa filtrada como uma linha no arquivo
     promessasFiltradas.forEach((item) => {
       const linha = `"${item.id}";"${item.entidade}";"${item.area}";"${item.promessa}";"${item.status_geral}";"${item.fases_evidencia.orcamento.dotacao_atualizada}";"${item.fases_evidencia.execucao.percentual_execucao}"`;
       csvContent += linha + "\r\n";
     });
 
-    // Cria um link virtual para disparar o download do arquivo no navegador
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
@@ -94,7 +108,6 @@ export default function Home() {
             Todas as informações exibidas são extraídas e cruzadas a partir de plataformas digitais públicas e oficiais do governo. Podem ocorrer pequenas margens de erro ou atrasos inerentes à atualização desses portais de origem. A lógica analítica, o design e o código-fonte desta plataforma são propriedades protegidas por direitos autorais.
           </p>
 
-          {/* CAIXA DE SELEÇÃO OBRIGATÓRIA */}
           <div style={{ marginBottom: '25px', display: 'flex', alignItems: 'center', gap: '10px', backgroundColor: '#F9FAFB', padding: '15px', borderRadius: '8px', border: '1px solid #E5E7EB' }}>
             <input 
               type="checkbox" 
@@ -108,7 +121,6 @@ export default function Home() {
             </label>
           </div>
 
-          {/* BOTÕES DE AÇÃO */}
           <div style={{ display: 'flex', gap: '10px', flexDirection: 'column' }}>
             <button 
               disabled={!caixaMarcada}
@@ -159,7 +171,6 @@ export default function Home() {
           <p>Promessas. Dinheiro. Resultados.</p>
         </div>
         
-        {/* BOTÃO DE EXPORTAÇÃO CSV */}
         <button 
           onClick={exportarParaCSV}
           style={{
@@ -169,6 +180,29 @@ export default function Home() {
         >
           📥 Baixar Relatório (CSV)
         </button>
+      </div>
+
+      {/* PAINEL DE INDICADORES DE DESEMPENHO (NOVO - OPÇÃO B) */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '15px', marginBottom: '30px' }}>
+        <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)', borderLeft: '4px solid #004A8D' }}>
+          <p style={{ color: '#666', fontSize: '14px', marginBottom: '5px' }}>Total de Metas Monitoradas</p>
+          <h2 style={{ color: '#004A8D', fontSize: '28px' }}>{totalPromessas}</h2>
+        </div>
+
+        <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)', borderLeft: '4px solid #10B981' }}>
+          <p style={{ color: '#666', fontSize: '14px', marginBottom: '5px' }}>Média de Execução Global</p>
+          <h2 style={{ color: '#10B981', fontSize: '28px' }}>{mediaExecucaoGlobal}%</h2>
+        </div>
+
+        <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)', borderLeft: '4px solid #D97706' }}>
+          <p style={{ color: '#666', fontSize: '14px', marginBottom: '5px' }}>Em Andamento</p>
+          <h2 style={{ color: '#D97706', fontSize: '28px' }}>{totalEmAndamento}</h2>
+        </div>
+
+        <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)', borderLeft: '4px solid #EF4444' }}>
+          <p style={{ color: '#666', fontSize: '14px', marginBottom: '5px' }}>Atrasadas / Alertas</p>
+          <h2 style={{ color: '#EF4444', fontSize: '28px' }}>{totalAtrasadas}</h2>
+        </div>
       </div>
 
       {/* FILTROS POR ÁREA */}
