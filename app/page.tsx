@@ -146,7 +146,7 @@ export default function Home() {
         >
           {secretariasDisponiveis.map(( secretaria ) => (
             <option key={secretaria} value={secretaria}>
-              {secretaria === 'Todas' ? '📂 Todas as Secretarias do Estado' : secretaria}
+              {secretaria === 'Todas' ? '📂 Todas as Secretarias do Estado de SP' : secretaria}
             </option>
           ))}
         </select>
