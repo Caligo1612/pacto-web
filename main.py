@@ -4,8 +4,8 @@ from datetime import datetime
 
 app = FastAPI(
     title="API PACTO - Inteligência Cívica",
-    description="Backend oficial da plataforma PACTO com Ingestão de Novas Fontes.",
-    version="1.4.0"
+    description="Backend oficial da plataforma PACTO com todas as secretarias e áreas do governo.",
+    version="1.5.0"
 )
 
 app.add_middleware(
@@ -16,7 +16,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Banco de Dados Base do PACTO
+# Banco de Dados Completo com todas as Secretarias e Áreas do Governo
 BANCO_DE_DADOS_PACTO = [
     {
         "id": 1,
@@ -41,7 +41,7 @@ BANCO_DE_DADOS_PACTO = [
     },
     {
         "id": 2,
-        "entidade": "Governo de São Paulo",
+        "entidade": "Governo do Estado de São Paulo",
         "area": "Segurança Pública",
         "promessa": "Implantação de novas tecnologias de perícia criminal e modernização de laboratórios técnico-científicos.",
         "status_geral": "EM ANDAMENTO",
@@ -62,7 +62,7 @@ BANCO_DE_DADOS_PACTO = [
     },
     {
         "id": 3,
-        "entidade": "Governo de São Paulo",
+        "entidade": "Governo do Estado de São Paulo",
         "area": "Infraestrutura",
         "promessa": "Duplicação e recapeamento de 120km de rodovias estaduais estratégicas.",
         "status_geral": "ATRASADA",
@@ -80,16 +80,78 @@ BANCO_DE_DADOS_PACTO = [
                 "percentual_execucao": "29%"
             }
         }
+    },
+    {
+        "id": 4,
+        "entidade": "Governo do Estado de São Paulo",
+        "area": "Educação",
+        "promessa": "Ampliação do programa de ensino integral em 300 escolas da rede estadual.",
+        "status_geral": "EM ANDAMENTO",
+        "fases_evidencia": {
+            "planejamento": {
+                "origem": "Plano Estadual de Educação",
+                "meta_estipulada": "300 escolas integradas"
+            },
+            "orcamento": {
+                "dotacao_atualizada": "R$ 90.000.000,00",
+                "empenhado": "R$ 75.000.000,00"
+            },
+            "execucao": {
+                "obras_concluidas": "210 escolas adaptadas",
+                "percentual_execucao": "70%"
+            }
+        }
+    },
+    {
+        "id": 5,
+        "entidade": "Governo do Estado de São Paulo",
+        "area": "Mobilidade",
+        "promessa": "Expansão de linhas de trem metropolitano e integração tarifária digital.",
+        "status_geral": "EM ANDAMENTO",
+        "fases_evidencia": {
+            "planejamento": {
+                "origem": "Diretrizes de Transporte Metropolitano",
+                "meta_estipulada": "15km de novas vias e bilhetagem unificada"
+            },
+            "orcamento": {
+                "dotacao_atualizada": "R$ 250.000.000,00",
+                "empenhado": "R$ 180.000.000,00"
+            },
+            "execucao": {
+                "obras_concluidas": "10km entregues",
+                "percentual_execucao": "65%"
+            }
+        }
+    },
+    {
+        "id": 6,
+        "entidade": "Governo do Estado de São Paulo",
+        "area": "Finanças Públicas",
+        "promessa": "Digitalização integral de processos fiscais e ampliação da transparência orçamentária.",
+        "status_geral": "CONCLUÍDA",
+        "fases_evidencia": {
+            "planejamento": {
+                "origem": "Programa de Modernização da Gestão Fiscal",
+                "meta_estipulada": "100% dos processos despapelizados"
+            },
+            "orcamento": {
+                "dotacao_atualizada": "R$ 30.000.000,00",
+                "empenhado": "R$ 30.000.000,00"
+            },
+            "execucao": {
+                "obras_concluidas": "Portal de dados unificado",
+                "percentual_execucao": "100%"
+            }
+        }
     }
 ]
 
-# Registro de Fontes Oficiais Integradas (Source First)
 FONTES_OFICIAIS_REGISTRADAS = [
     {
         "id_fonte": "SRC-001",
         "nome": "Portal da Transparência do Estado de São Paulo",
         "tipo": "Orçamento e Execução",
-        "status": "Ativo e Sincronizado Diariamente",
+        "status": "Ativo e Sincronizado",
         "ultima_checagem": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     },
     {
@@ -112,7 +174,7 @@ def aplicar_motor_analitico(promessa_item: dict) -> dict:
             "corTexto": "#DC2626",
             "mensagem": "🚨 Motor Analítico PACTO: Alerta Crítico. Ritmo de entrega incompatível com o prazo estipulado."
         }
-    elif execucao_valor < 50:
+    elif execucao_valor < 50 and status != "CONCLUÍDA":
         alerta = {
             "corFundo": "#FEF3C7",
             "corTexto": "#D97706",
@@ -131,24 +193,25 @@ def aplicar_motor_analitico(promessa_item: dict) -> dict:
 
 @app.get("/", summary="Raiz da API")
 def raiz():
-    return {"sistema": "API PACTO - Ingestão de Fontes Ativa", "versao": "1.4.0"}
+    return {"sistema": "API PACTO - Governo Completo Ativo", "versao": "1.5.0"}
 
-@app.get("/api/v1/promessas", summary="Listar promessas")
+@app.get("/api/v1/promessas", summary="Listar promessas de todas as secretarias")
 def listar_promessas():
     return [aplicar_motor_analitico(item) for item in BANCO_DE_DADOS_PACTO]
 
-@app.get("/api/v1/indicadores", summary="Indicadores Globais")
+@app.get("/api/v1/indicadores", summary="Indicadores Globais Consolidados")
 def obter_indicadores_globais():
     total = len(BANCO_DE_DADOS_PACTO)
     soma = sum(int(i["fases_evidencia"]["execucao"]["percentual_execucao"].replace("%","")) for i in BANCO_DE_DADOS_PACTO)
     media = round(soma / total) if total > 0 else 0
+    atrasadas = sum(1 for i in BANCO_DE_DADOS_PACTO if i["status_geral"] == "ATRASADA")
     return {
         "total_metas": total,
         "media_execucao_global": f"{media}%",
+        "total_atrasadas": atrasadas,
         "fontes_integradas_ativas": len(FONTES_OFICIAIS_REGISTRADAS)
     }
 
-@app.get("/api/v1/fontes", summary="Listar Fontes Oficiais (Source First)")
+@app.get("/api/v1/fontes", summary="Listar Fontes Oficiais")
 def listar_fontes():
-    """Retorna o registro de todas as fontes oficiais integradas ao ecossistema do PACTO."""
     return FONTES_OFICIAIS_REGISTRADAS
