@@ -1,13 +1,13 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(
     title="API PACTO - Inteligência Cívica",
-    description="Backend oficial da plataforma PACTO para transparência e fiscalização cívica.",
-    version="1.1.0"
+    description="Backend oficial da plataforma PACTO para transparência, orçamentos e fiscalização cívica.",
+    version="1.2.0"
 )
 
-# Configuração de CORS para permitir que a Vercel e o localhost acessem a API
+# Configuração de CORS para permitir requisições seguras da Vercel e do localhost
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -16,7 +16,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Banco de Dados Expandido com as novas áreas (Saúde, Segurança Pública e Infraestrutura)
+# Banco de Dados Oficial do PACTO (Multissetorial)
 BANCO_DE_DADOS_PACTO = [
     {
         "id": 1,
@@ -98,16 +98,66 @@ BANCO_DE_DADOS_PACTO = [
     }
 ]
 
-@app.get("/")
+# =====================================================================
+# ROTAS DO BACKEND APRIMORADAS
+# =====================================================================
+
+@app.get("/", summary="Raiz da API")
 def raiz():
-    return {"mensagem": "Bem-vindo ao Backend do PACTO. Utilize a rota /api/v1/promessas para acessar os dados."}
+    return {
+        "sistema": "API PACTO - Inteligência Cívica",
+        "versao": "1.2.0",
+        "documentacao": "/docs",
+        "endpoints_disponiveis": [
+            "/api/v1/promessas",
+            "/api/v1/promessas/area/{nome_area}",
+            "/api/v1/indicadores"
+        ]
+    }
 
-# Rota principal unificada para consulta de promessas de todas as áreas
-@app.get("/api/v1/promessas")
+@app.get("/api/v1/promessas", summary="Listar todas as promessas cadastradas")
 def listar_promessas():
+    """Retorna a lista completa de promessas monitoradas pelo PACTO."""
     return BANCO_DE_DADOS_PACTO
 
-# Rota de compatibilidade mantida para sistemas legados
-@app.get("/api/v1/saude/promessas")
-def listar_promessas_saude():
-    return BANCO_DE_DADOS_PACTO
+@app.get("/api/v1/promessas/area/{nome_area}", summary="Filtrar promessas por área específica")
+def filtrar_por_area(nome_area: str):
+    """Filtra e retorna apenas as promessas pertencentes à área solicitada (ex: Saúde, Segurança Pública, Infraestrutura)."""
+    # Normaliza a busca para ignorar pequenas diferenças de maiúsculas/minúsculas
+    resultados = [item for item in BANCO_DE_DADOS_PACTO if item["area"].lower() == nome_area.lower()]
+    
+    if not resultados:
+        raise HTTPException(status_code=404, detail=f"Nenhuma promessa encontrada para a área: '{nome_area}'")
+    
+    return resultados
+
+@app.get("/api/v1/indicadores", summary="Obter indicadores de desempenho globais")
+def obter_indicadores_globais():
+    """Calcula e retorna o painel de KPIs globais (Total de Metas, Média de Execução e Status)."""
+    total = len(BANCO_DE_DADOS_PACTO)
+    
+    if total == 0:
+        return {"total": 0, "media_execucao": 0, "atrasadas": 0, "em_andamento": 0}
+
+    soma_percentuais = 0
+    atrasadas = 0
+    em_andamento = 0
+
+    for item in BANCO_DE_DADOS_PACTO:
+        # Extrai o valor numérico da string de percentual (ex: "40%" -> 40)
+        perc_str = item["fases_evidencia"]["execucao"]["percentual_execucao"].replace("%", "")
+        soma_percentuais += int(perc_str)
+        
+        if item["status_geral"] == "ATRASADA":
+            atrasadas += 1
+        elif item["status_geral"] == "EM ANDAMENTO":
+            em_andamento += 1
+
+    media_execucao = round(soma_percentuais / total)
+
+    return {
+        "total_metas": total,
+        "media_execucao_global": f"{media_execucao}%",
+        "total_atrasadas": atrasadas,
+        "total_em_andamento": em_andamento
+    }
