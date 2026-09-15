@@ -18,13 +18,13 @@ export default function Home() {
   // =====================================================================
   // 2. BUSCA DE DADOS NA NUVEM (Servidor Render)
   // =====================================================================
+  // URL atualizada para buscar de todas as áreas no Render
   useEffect(() => {
-    fetch('https://pacto-web.onrender.com/api/v1/saude/promessas')
+    fetch('https://pacto-web.onrender.com/api/v1/promessas')
       .then((resposta) => resposta.json()) 
       .then((dadosRecebidos) => setListaPromessas(dadosRecebidos))
       .catch((erro) => console.log("Erro ao buscar dados do servidor:", erro));
   }, []);
-
   const promessasFiltradas = listaPromessas.filter((item) => {
     const combinaTexto = item.promessa.toLowerCase().includes(textoPesquisa.toLowerCase());
     const combinaArea = areaSelecionada === 'Todas' || item.area === areaSelecionada;
@@ -135,8 +135,8 @@ export default function Home() {
         <p>Promessas. Dinheiro. Resultados.</p>
       </div>
 
-      <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
-        {['Todas', 'Saúde', 'Educação'].map((area) => (
+      <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
+        {['Todas', 'Saúde', 'Segurança Pública', 'Infraestrutura'].map((area) => (
           <button 
             key={area} onClick={() => setAreaSelecionada(area)}
             style={{
