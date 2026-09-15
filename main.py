@@ -4,8 +4,8 @@ from datetime import datetime
 
 app = FastAPI(
     title="API PACTO - Inteligência Cívica",
-    description="Backend oficial da plataforma PACTO contendo as 24 Secretarias e o Módulo de Contratos.",
-    version="1.7.1"
+    description="Backend oficial da plataforma PACTO contendo 24 Secretarias, Contratos e Obras com Geolocalização.",
+    version="1.8.0"
 )
 
 app.add_middleware(
@@ -308,7 +308,7 @@ BANCO_DE_DADOS_PACTO = [
     }
 ]
 
-# Base de Dados do Módulo de Contratos e Fornecedores (Frente 1)
+# Base de Contratos (Frente 1)
 BANCO_CONTRATOS_PACTO = [
     {
         "id_contrato": "CT-2026-089",
@@ -351,6 +351,48 @@ BANCO_CONTRATOS_PACTO = [
     }
 ]
 
+# Nova Base de Dados: Obras Públicas com Geolocalização (Frente 2)
+BANCO_OBRAS_PACTO = [
+    {
+        "id_obra": "OBRA-2026-01",
+        "secretaria": "Saúde",
+        "nome": "Centro de Atendimento Oncológico - Unidade Capital",
+        "descricao": "Construção de infraestrutura hospitalar especializada em oncologia com 12.000m².",
+        "localizacao": "São Paulo - SP (Zona Sul)",
+        "latitude": -23.588056,
+        "longitude": -46.632222,
+        "valor_obra": "R$ 22.000.000,00",
+        "data_inicio": "2026-01-10",
+        "previsao_termino": "2026-12-20",
+        "percentual_execucao": "45%",
+        "status": "Em Andamento",
+        "historico": [
+            "01/2026 - Início da fundação e terraplanagem",
+            "05/2026 - Conclusão da estrutura de concreto",
+            "08/2026 - Instalação de redes hidráulicas e elétricas"
+        ]
+    },
+    {
+        "id_obra": "OBRA-2026-02",
+        "secretaria": "Logística e Transportes",
+        "nome": "Duplicação Rodovia Estadual SP-280 (Trecho Norte)",
+        "descricao": "Serviços de engenharia para duplicação de pista, pavimentação e sinalização viária.",
+        "localizacao": "Região de Sorocaba - SP",
+        "latitude": -23.501667,
+        "longitude": -47.458333,
+        "valor_obra": "R$ 48.500.000,00",
+        "data_inicio": "2025-11-15",
+        "previsao_termino": "2026-10-30",
+        "percentual_execucao": "35%",
+        "status": "Em Andamento com Atenção",
+        "historico": [
+            "11/2025 - Ordem de serviço emitida",
+            "03/2026 - Executados 15km de pavimentação",
+            "07/2026 - Retificação ambiental em trecho de manancial"
+        ]
+    }
+]
+
 FONTES_OFICIAIS_REGISTRADAS = [
     {
         "id_fonte": "SRC-001",
@@ -363,6 +405,13 @@ FONTES_OFICIAIS_REGISTRADAS = [
         "id_fonte": "SRC-002",
         "nome": "Portal Nacional de Contratações Públicas (PNCP)",
         "tipo": "Contratos e Licitações",
+        "status": "Ativo e Sincronizado",
+        "ultima_checagem": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    },
+    {
+        "id_fonte": "SRC-003",
+        "nome": "Sistema de Acompanhamento de Obras Públicas (SIGEO)",
+        "tipo": "Geolocalização e Engenharia",
         "status": "Ativo e Sincronizado",
         "ultima_checagem": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     }
@@ -395,16 +444,20 @@ def aplicar_motor_analitico(promessa_item: dict) -> dict:
 
 @app.get("/", summary="Raiz da API")
 def raiz():
-    return {"sistema": "API PACTO - 24 Secretarias e Módulo de Contratos Ativos", "versao": "1.7.1"}
+    return {"sistema": "API PACTO - Módulo de Obras com Geolocalização Ativo", "versao": "1.8.0"}
 
 @app.get("/api/v1/promessas", summary="Listar promessas de todas as secretarias")
 def listar_promessas():
     return [aplicar_motor_analitico(item) for item in BANCO_DE_DADOS_PACTO]
 
-@app.get("/api/v1/contratos", summary="Listar Contratos e Fornecedores do Estado")
+@app.get("/api/v1/contratos", summary="Listar Contratos e Fornecedores")
 def listar_contratos():
-    """Retorna a base de contratos públicos e fornecedores integrada ao PACTO."""
     return BANCO_CONTRATOS_PACTO
+
+@app.get("/api/v1/obras", summary="Listar Obras Públicas com Geolocalização")
+def listar_obras():
+    """Retorna a base de obras públicas com coordenadas geográficas e cronologia."""
+    return BANCO_OBRAS_PACTO
 
 @app.get("/api/v1/indicadores", summary="Indicadores Globais Consolidados")
 def obter_indicadores_globais():
@@ -417,6 +470,7 @@ def obter_indicadores_globais():
         "media_execucao_global": f"{media}%",
         "total_atrasadas": atrasadas,
         "total_contratos_monitorados": len(BANCO_CONTRATOS_PACTO),
+        "total_obras_geolocalizadas": len(BANCO_OBRAS_PACTO),
         "fontes_integradas_ativas": len(FONTES_OFICIAIS_REGISTRADAS)
     }
 
