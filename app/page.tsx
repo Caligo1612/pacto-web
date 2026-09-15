@@ -12,17 +12,17 @@ export default function Home() {
   
   // Memórias de Proteção Legal
   const [termosAceitos, setTermosAceitos] = useState(false);
-  const [caixaMarcada, setCaixaMarcada] = useState(false); // Controla o Checkbox
-  const [recusouTermos, setRecusouTermos] = useState(false); // Controla a saída do sistema
+  const [caixaMarcada, setCaixaMarcada] = useState(false);
+  const [recusouTermos, setRecusouTermos] = useState(false);
 
   // =====================================================================
-  // 2. BUSCA DE DADOS
+  // 2. BUSCA DE DADOS NA NUVEM (Servidor Render)
   // =====================================================================
   useEffect(() => {
-    fetch('http://127.0.0.1:8000/api/v1/saude/promessas')
+    fetch('https://pacto-web.onrender.com/api/v1/saude/promessas')
       .then((resposta) => resposta.json()) 
       .then((dadosRecebidos) => setListaPromessas(dadosRecebidos))
-      .catch((erro) => console.log("Erro ao buscar dados:", erro));
+      .catch((erro) => console.log("Erro ao buscar dados do servidor:", erro));
   }, []);
 
   const promessasFiltradas = listaPromessas.filter((item) => {
@@ -32,18 +32,17 @@ export default function Home() {
   });
 
   // =====================================================================
-  // TELA DE RECUSA (O cidadão decidiu não aceitar e sair)
+  // TELA DE RECUSA DOS TERMOS
   // =====================================================================
   if (recusouTermos) {
     return (
-      <div style={{ padding: '20px', backgroundColor: '#F5F5F5', minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', textAlign: 'center' }}>
+      <div style={{ padding: '20px', backgroundColor: '#F5F5F5', minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', textAlign: 'center', fontFamily: 'sans-serif' }}>
         <div>
           <h2 style={{ color: '#333', marginBottom: '15px' }}>Acesso Encerrado</h2>
           <p style={{ color: '#666', marginBottom: '20px' }}>Você optou por não aceitar os termos de uso. O PACTO respeita a sua decisão.</p>
-          {/* Botão de resgate caso tenha clicado por engano */}
           <button 
             onClick={() => setRecusouTermos(false)} 
-            style={{ padding: '10px 20px', backgroundColor: '#004A8D', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}
+            style={{ padding: '10px 20px', backgroundColor: '#004A8D', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}
           >
             Voltar e ler novamente
           </button>
@@ -89,12 +88,12 @@ export default function Home() {
           {/* BOTÕES DE AÇÃO */}
           <div style={{ display: 'flex', gap: '10px', flexDirection: 'column' }}>
             <button 
-              disabled={!caixaMarcada} // O botão fica desativado se a caixa não estiver marcada
+              disabled={!caixaMarcada}
               onClick={() => setTermosAceitos(true)}
               style={{ 
                 width: '100%', padding: '15px', color: 'white', border: 'none', borderRadius: '8px', fontSize: '16px', fontWeight: 'bold', 
-                cursor: caixaMarcada ? 'pointer' : 'not-allowed', // Muda o ícone do mouse
-                backgroundColor: caixaMarcada ? '#10B981' : '#A7F3D0', // Se não estiver marcado, fica um verde claro e opaco
+                cursor: caixaMarcada ? 'pointer' : 'not-allowed', 
+                backgroundColor: caixaMarcada ? '#10B981' : '#A7F3D0',
                 transition: 'background-color 0.3s'
               }}
             >
@@ -126,7 +125,7 @@ export default function Home() {
   }
 
   // =====================================================================
-  // TELA PRINCIPAL
+  // TELA PRINCIPAL (Painel Web)
   // =====================================================================
   return (
     <div style={{ padding: '40px', fontFamily: 'sans-serif', backgroundColor: '#F5F5F5', minHeight: '100vh' }}>
@@ -142,7 +141,8 @@ export default function Home() {
             key={area} onClick={() => setAreaSelecionada(area)}
             style={{
               padding: '10px 20px', borderRadius: '20px', border: 'none', cursor: 'pointer', fontWeight: 'bold',
-              backgroundColor: areaSelecionada === area ? '#004A8D' : '#E5E7EB', color: areaSelecionada === area ? 'white' : '#374151'
+              backgroundColor: areaSelecionada === area ? '#004A8D' : '#E5E7EB',
+              color: areaSelecionada === area ? 'white' : '#374151'
             }}
           >
             {area}
@@ -188,7 +188,7 @@ export default function Home() {
               <p><strong>Empenhado:</strong> {dados.fases_evidencia.orcamento.empenhado}</p>
             </div>
             
-            <div style={{ flex: '1', minWidth: '200px', backgroundColor: '#F9FAFB', padding: '15px', borderRadius: '6px', borderLeft: '4px solid #8B5CF6' }}>
+            <div style={{ flex: '1', minWidth: '200px', backgroundColor: '#F9FAFB', padding: '15px', borderRadius: '6px', borderLeft: '8px solid #8B5CF6' }}>
               <h3 style={{ fontSize: '16px', color: '#555', marginBottom: '10px' }}>✅ Resultado</h3>
               <p><strong>Concluídas:</strong> {dados.fases_evidencia.execucao.obras_concluidas}</p>
               
@@ -199,9 +199,14 @@ export default function Home() {
                 </div>
                 
                 <div style={{ width: '100%', backgroundColor: '#E5E7EB', borderRadius: '10px', height: '10px', overflow: 'hidden' }}>
-                  <div style={{ height: '100%', backgroundColor: '#10B981', width: dados.fases_evidencia.execucao.percentual_execucao, transition: 'width 1s ease-in-out' }} />
+                  <div style={{ 
+                    height: '100%', backgroundColor: '#10B981', 
+                    width: dados.fases_evidencia.execucao.percentual_execucao, 
+                    transition: 'width 1s ease-in-out' 
+                  }} />
                 </div>
               </div>
+
             </div>
           </div>
         </div>
