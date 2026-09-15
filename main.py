@@ -3,11 +3,10 @@ from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(
     title="API PACTO - Inteligência Cívica",
-    description="Backend oficial da plataforma PACTO para transparência, orçamentos e fiscalização cívica.",
-    version="1.2.0"
+    description="Backend oficial da plataforma PACTO com Motor Analítico Automatizado.",
+    version="1.3.0"
 )
 
-# Configuração de CORS para permitir requisições seguras da Vercel e do localhost
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -16,7 +15,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Banco de Dados Oficial do PACTO (Multissetorial)
 BANCO_DE_DADOS_PACTO = [
     {
         "id": 1,
@@ -24,11 +22,6 @@ BANCO_DE_DADOS_PACTO = [
         "area": "Saúde",
         "promessa": "Construção de 5 novos Centros de Atendimento Oncológico até o final de 2026.",
         "status_geral": "EM ANDAMENTO",
-        "alerta_analitico": {
-            "corFundo": "#FEF3C7",
-            "corTexto": "#D97706",
-            "mensagem": "⚠️ Atenção: O ritmo atual indica risco de atraso de 3 meses no cronograma previsto."
-        },
         "fases_evidencia": {
             "planejamento": {
                 "origem": "Plano de Governo Registrado no TSE",
@@ -50,11 +43,6 @@ BANCO_DE_DADOS_PACTO = [
         "area": "Segurança Pública",
         "promessa": "Implantação de novas tecnologias de perícia criminal e modernização de laboratórios técnico-científicos.",
         "status_geral": "EM ANDAMENTO",
-        "alerta_analitico": {
-            "corFundo": "#D1FAE5",
-            "corTexto": "#047857",
-            "mensagem": "✅ Execução dentro do prazo: Aquisições de equipamentos de alta precisão em fase final."
-        },
         "fases_evidencia": {
             "planejamento": {
                 "origem": "Diretrizes Estratégicas da Polícia Técnico-Científica",
@@ -76,11 +64,6 @@ BANCO_DE_DADOS_PACTO = [
         "area": "Infraestrutura",
         "promessa": "Duplicação e recapeamento de 120km de rodovias estaduais estratégicas.",
         "status_geral": "ATRASADA",
-        "alerta_analitico": {
-            "corFundo": "#FEE2E2",
-            "corTexto": "#DC2626",
-            "mensagem": "🚨 Alerta Vermelho: Paralisação temporária em trecho crítico devido a readequação de licença ambiental."
-        },
         "fases_evidencia": {
             "planejamento": {
                 "origem": "Programa Rodoviário Estadual de Longo Prazo",
@@ -99,65 +82,61 @@ BANCO_DE_DADOS_PACTO = [
 ]
 
 # =====================================================================
-# ROTAS DO BACKEND APRIMORADAS
+# MOTOR ANALÍTICO PACTO (Regras Automáticas de Alerta)
+# =====================================================================
+def aplicar_motor_analitico(promessa_item: dict) -> dict:
+    """Aplica regras estatísticas automáticas para gerar alertas baseados em fatos."""
+    exec_str = promessa_item["fases_evidencia"]["execucao"]["percentual_execucao"].replace("%", "")
+    execucao_valor = int(exec_str)
+    status = promessa_item["status_geral"]
+
+    # Regra 1: Alerta Vermelho para obras atrasadas com execução crítica
+    if status == "ATRASADA" and execucao_valor < 30:
+        alerta = {
+            "corFundo": "#FEE2E2",
+            "corTexto": "#DC2626",
+            "mensagem": "🚨 Motor Analítico PACTO: Alerta Crítico. Ritmo de entrega incompatível com o prazo estipulado."
+        }
+    # Regra 2: Alerta Amarelo para projetos em andamento com ritmo moderado
+    elif execucao_valor < 50:
+        alerta = {
+            "corFundo": "#FEF3C7",
+            "corTexto": "#D97706",
+            "mensagem": "⚠️ Motor Analítico PACTO: Atenção moderada. Execução física abaixo de 50% da meta global."
+        }
+    # Regra 3: Alerta Verde para execução avançada e saudável
+    else:
+        alerta = {
+            "corFundo": "#D1FAE5",
+            "corTexto": "#047857",
+            "mensagem": "✅ Motor Analítico PACTO: Execução dentro dos parâmetros esperados de eficiência."
+        }
+
+    # Insere dinamicamente o alerta gerado pelo motor na resposta
+    promessa_com_alerta = dict(promessa_item)
+    promessa_com_alerta["alerta_analitico"] = alerta
+    return promessa_com_alerta
+
+# =====================================================================
+# ROTAS DA API
 # =====================================================================
 
 @app.get("/", summary="Raiz da API")
 def raiz():
-    return {
-        "sistema": "API PACTO - Inteligência Cívica",
-        "versao": "1.2.0",
-        "documentacao": "/docs",
-        "endpoints_disponiveis": [
-            "/api/v1/promessas",
-            "/api/v1/promessas/area/{nome_area}",
-            "/api/v1/indicadores"
-        ]
-    }
+    return {"sistema": "API PACTO - Motor Analítico Ativo", "versao": "1.3.0"}
 
-@app.get("/api/v1/promessas", summary="Listar todas as promessas cadastradas")
+@app.get("/api/v1/promessas", summary="Listar promessas com Motor Analítico aplicado")
 def listar_promessas():
-    """Retorna a lista completa de promessas monitoradas pelo PACTO."""
-    return BANCO_DE_DADOS_PACTO
+    """Retorna todas as promessas passando-as pelo crivo do motor analítico automático."""
+    return [aplicar_motor_analitico(item) for item in BANCO_DE_DADOS_PACTO]
 
-@app.get("/api/v1/promessas/area/{nome_area}", summary="Filtrar promessas por área específica")
-def filtrar_por_area(nome_area: str):
-    """Filtra e retorna apenas as promessas pertencentes à área solicitada (ex: Saúde, Segurança Pública, Infraestrutura)."""
-    # Normaliza a busca para ignorar pequenas diferenças de maiúsculas/minúsculas
-    resultados = [item for item in BANCO_DE_DADOS_PACTO if item["area"].lower() == nome_area.lower()]
-    
-    if not resultados:
-        raise HTTPException(status_code=404, detail=f"Nenhuma promessa encontrada para a área: '{nome_area}'")
-    
-    return resultados
-
-@app.get("/api/v1/indicadores", summary="Obter indicadores de desempenho globais")
+@app.get("/api/v1/indicadores", summary="Indicadores Globais")
 def obter_indicadores_globais():
-    """Calcula e retorna o painel de KPIs globais (Total de Metas, Média de Execução e Status)."""
     total = len(BANCO_DE_DADOS_PACTO)
-    
-    if total == 0:
-        return {"total": 0, "media_execucao": 0, "atrasadas": 0, "em_andamento": 0}
-
-    soma_percentuais = 0
-    atrasadas = 0
-    em_andamento = 0
-
-    for item in BANCO_DE_DADOS_PACTO:
-        # Extrai o valor numérico da string de percentual (ex: "40%" -> 40)
-        perc_str = item["fases_evidencia"]["execucao"]["percentual_execucao"].replace("%", "")
-        soma_percentuais += int(perc_str)
-        
-        if item["status_geral"] == "ATRASADA":
-            atrasadas += 1
-        elif item["status_geral"] == "EM ANDAMENTO":
-            em_andamento += 1
-
-    media_execucao = round(soma_percentuais / total)
-
+    soma = sum(int(i["fases_evidencia"]["execucao"]["percentual_execucao"].replace("%","")) for i in BANCO_DE_DADOS_PACTO)
+    media = round(soma / total) if total > 0 else 0
     return {
         "total_metas": total,
-        "media_execucao_global": f"{media_execucao}%",
-        "total_atrasadas": atrasadas,
-        "total_em_andamento": em_andamento
+        "media_execucao_global": f"{media}%",
+        "motor_analitico": "Ativo e operando com regras automáticas"
     }
