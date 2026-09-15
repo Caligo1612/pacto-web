@@ -3,26 +3,26 @@ import { useEffect, useState } from 'react';
 import './globals.css';
 
 export default function Home() {
-  // =====================================================================
-  // 1. MEMÓRIAS DA TELA (Estados)
-  // =====================================================================
   const [listaPromessas, setListaPromessas] = useState<any[]>([]);
+  const [indicadoresGlobais, setIndicadoresGlobais] = useState<any>(null);
   const [textoPesquisa, setTextoPesquisa] = useState('');
   const [areaSelecionada, setAreaSelecionada] = useState('Todas');
   
-  // Memórias de Proteção Legal
   const [termosAceitos, setTermosAceitos] = useState(false);
   const [caixaMarcada, setCaixaMarcada] = useState(false);
   const [recusouTermos, setRecusouTermos] = useState(false);
 
-  // =====================================================================
-  // 2. BUSCA DE DADOS NA NUVEM (Servidor Render)
-  // =====================================================================
+  // Busca de Promessas e Indicadores no Backend do Render
   useEffect(() => {
     fetch('https://pacto-web.onrender.com/api/v1/promessas')
-      .then((resposta) => resposta.json()) 
-      .then((dadosRecebidos) => setListaPromessas(dadosRecebidos))
-      .catch((erro) => console.log("Erro ao buscar dados do servidor:", erro));
+      .then((res) => res.json())
+      .then((dados) => setListaPromessas(dados))
+      .catch((err) => console.log("Erro ao buscar promessas:", err));
+
+    fetch('https://pacto-web.onrender.com/api/v1/indicadores')
+      .then((res) => res.json())
+      .then((dados) => setIndicadoresGlobais(dados))
+      .catch((err) => console.log("Erro ao buscar indicadores:", err));
   }, []);
 
   const promessasFiltradas = listaPromessas.filter((item) => {
@@ -31,34 +31,12 @@ export default function Home() {
     return combinaTexto && combinaArea;
   });
 
-  // =====================================================================
-  // 3. CÁLCULO DOS INDICADORES DE DESEMPENHO (Opção B)
-  // =====================================================================
-  const totalPromessas = listaPromessas.length;
-  
-  // Calcula a média do percentual de execução de todas as promessas cadastradas
-  const somaPercentuais = listaPromessas.reduce((acumulado, atual) => {
-    const valorNumerico = parseInt(atual.fases_evidencia.execucao.percentual_execucao.replace('%', '')) || 0;
-    return acumulado + valorNumerico;
-  }, 0);
-  
-  const mediaExecucaoGlobal = totalPromessas > 0 ? Math.round(somaPercentuais / totalPromessas) : 0;
-
-  // Contagem por status geral
-  const totalAtrasadas = listaPromessas.filter(i => i.status_geral === 'ATRASADA').length;
-  const totalEmAndamento = listaPromessas.filter(i => i.status_geral === 'EM ANDAMENTO').length;
-
-  // =====================================================================
-  // 4. FUNÇÃO DE EXPORTAÇÃO PARA CSV (Opção A)
-  // =====================================================================
   const exportarParaCSV = () => {
     let csvContent = "data:text/csv;charset=utf-8,ID;Entidade;Área;Promessa;Status;Orçamento Atualizado;Percentual Execução\n";
-
     promessasFiltradas.forEach((item) => {
       const linha = `"${item.id}";"${item.entidade}";"${item.area}";"${item.promessa}";"${item.status_geral}";"${item.fases_evidencia.orcamento.dotacao_atualizada}";"${item.fases_evidencia.execucao.percentual_execucao}"`;
       csvContent += linha + "\r\n";
     });
-
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
@@ -68,19 +46,13 @@ export default function Home() {
     document.body.removeChild(link);
   };
 
-  // =====================================================================
-  // TELA DE RECUSA DOS TERMOS
-  // =====================================================================
   if (recusouTermos) {
     return (
-      <div style={{ padding: '20px', backgroundColor: '#F5F5F5', minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', textAlign: 'center', fontFamily: 'sans-serif' }}>
+      <div style={{ padding: '20px', backgroundColor: '#F8FAFC', minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', textAlign: 'center', fontFamily: 'sans-serif' }}>
         <div>
-          <h2 style={{ color: '#333', marginBottom: '15px' }}>Acesso Encerrado</h2>
-          <p style={{ color: '#666', marginBottom: '20px' }}>Você optou por não aceitar os termos de uso. O PACTO respeita a sua decisão.</p>
-          <button 
-            onClick={() => setRecusouTermos(false)} 
-            style={{ padding: '10px 20px', backgroundColor: '#004A8D', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}
-          >
+          <h2 style={{ color: '#1E293B', marginBottom: '15px' }}>Acesso Encerrado</h2>
+          <p style={{ color: '#64748B', marginBottom: '20px' }}>Você optou por não aceitar os termos de uso.</p>
+          <button onClick={() => setRecusouTermos(false)} style={{ padding: '12px 24px', backgroundColor: '#0F172A', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>
             Voltar e ler novamente
           </button>
         </div>
@@ -88,200 +60,139 @@ export default function Home() {
     );
   }
 
-  // =====================================================================
-  // TELA DE PROTEÇÃO E TERMOS DE USO
-  // =====================================================================
   if (!termosAceitos) {
     return (
-      <div style={{ padding: '20px', fontFamily: 'sans-serif', backgroundColor: '#002B52', minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-        <div style={{ backgroundColor: 'white', padding: '40px', borderRadius: '12px', maxWidth: '600px', boxShadow: '0 10px 25px rgba(0,0,0,0.2)' }}>
-          
-          <h1 style={{ color: '#004A8D', marginBottom: '20px', textAlign: 'center' }}>🏛️ Bem-vindo ao PACTO</h1>
-          
-          <h2 style={{ fontSize: '18px', color: '#333', marginBottom: '10px' }}>Propósito e Valores</h2>
-          <p style={{ color: '#555', marginBottom: '15px', lineHeight: '1.6' }}>
-            O PACTO é uma ferramenta de inteligência cívica construída para a sociedade. Nossa missão é <strong>apartidária e educativa</strong>. O objetivo desta plataforma não é atacar ou derrubar figuras políticas, mas sim fomentar a transparência e gerar cidadãos mais conscientes sobre o uso do dinheiro público.
+      <div style={{ padding: '20px', fontFamily: 'sans-serif', backgroundColor: '#0F172A', minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+        <div style={{ backgroundColor: 'white', padding: '40px', borderRadius: '16px', maxWidth: '600px', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.3)' }}>
+          <h1 style={{ color: '#0F172A', marginBottom: '20px', textAlign: 'center', fontSize: '24px' }}>🏛️ Bem-vindo ao PACTO</h1>
+          <h2 style={{ fontSize: '16px', color: '#334155', marginBottom: '8px' }}>Propósito e Valores</h2>
+          <p style={{ color: '#475569', marginBottom: '16px', lineHeight: '1.6', fontSize: '14px' }}>
+            O PACTO é uma ferramenta de inteligência cívica apartidária e educativa. Nossa missão é transformar dados públicos em informações compreensíveis.
           </p>
-
-          <h2 style={{ fontSize: '18px', color: '#333', marginBottom: '10px' }}>Origem dos Dados e Direitos</h2>
-          <p style={{ color: '#555', marginBottom: '25px', lineHeight: '1.6' }}>
-            Todas as informações exibidas são extraídas e cruzadas a partir de plataformas digitais públicas e oficiais do governo. Podem ocorrer pequenas margens de erro ou atrasos inerentes à atualização desses portais de origem. A lógica analítica, o design e o código-fonte desta plataforma são propriedades protegidas por direitos autorais.
+          <h2 style={{ fontSize: '16px', color: '#334155', marginBottom: '8px' }}>Origem dos Dados e Direitos</h2>
+          <p style={{ color: '#475569', marginBottom: '24px', lineHeight: '1.6', fontSize: '14px' }}>
+            Informações extraídas de portais governamentais oficiais. Código e design protegidos por direitos autorais.
           </p>
-
-          <div style={{ marginBottom: '25px', display: 'flex', alignItems: 'center', gap: '10px', backgroundColor: '#F9FAFB', padding: '15px', borderRadius: '8px', border: '1px solid #E5E7EB' }}>
-            <input 
-              type="checkbox" 
-              id="aceito"
-              checked={caixaMarcada}
-              onChange={(e) => setCaixaMarcada(e.target.checked)}
-              style={{ width: '20px', height: '20px', cursor: 'pointer' }}
-            />
-            <label htmlFor="aceito" style={{ color: '#333', fontWeight: 'bold', cursor: 'pointer', userSelect: 'none' }}>
+          <div style={{ marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '12px', backgroundColor: '#F8FAFC', padding: '16px', borderRadius: '10px', border: '1px solid #E2E8F0' }}>
+            <input type="checkbox" id="aceito" checked={caixaMarcada} onChange={(e) => setCaixaMarcada(e.target.checked)} style={{ width: '20px', height: '20px', cursor: 'pointer' }} />
+            <label htmlFor="aceito" style={{ color: '#1E293B', fontWeight: 'bold', cursor: 'pointer', userSelect: 'none', fontSize: '14px' }}>
               Declaro que li, compreendo e aceito os termos descritos acima.
             </label>
           </div>
-
-          <div style={{ display: 'flex', gap: '10px', flexDirection: 'column' }}>
-            <button 
-              disabled={!caixaMarcada}
-              onClick={() => setTermosAceitos(true)}
-              style={{ 
-                width: '100%', padding: '15px', color: 'white', border: 'none', borderRadius: '8px', fontSize: '16px', fontWeight: 'bold', 
-                cursor: caixaMarcada ? 'pointer' : 'not-allowed', 
-                backgroundColor: caixaMarcada ? '#10B981' : '#A7F3D0',
-                transition: 'background-color 0.3s'
-              }}
-            >
-              Aceitar e Entrar
-            </button>
-
-            <button 
-              onClick={() => setRecusouTermos(true)}
-              style={{ width: '100%', padding: '15px', backgroundColor: 'transparent', color: '#EF4444', border: '1px solid #EF4444', borderRadius: '8px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}
-            >
-              Não aceitar e Sair
-            </button>
-          </div>
-          
+          <button disabled={!caixaMarcada} onClick={() => setTermosAceitos(true)} style={{ width: '100%', padding: '16px', color: 'white', border: 'none', borderRadius: '10px', fontSize: '16px', fontWeight: 'bold', cursor: caixaMarcada ? 'pointer' : 'not-allowed', backgroundColor: caixaMarcada ? '#059669' : '#A7F3D0', transition: 'background-color 0.3s' }}>
+            Aceitar e Entrar
+          </button>
+          <button onClick={() => setRecusouTermos(true)} style={{ width: '100%', padding: '14px', backgroundColor: 'transparent', color: '#DC2626', border: '1px solid #DC2626', borderRadius: '10px', fontSize: '15px', fontWeight: 'bold', cursor: 'pointer', marginTop: '12px' }}>
+            Não aceitar e Sair
+          </button>
         </div>
       </div>
     );
   }
 
-  // =====================================================================
-  // TELA DE CARREGAMENTO
-  // =====================================================================
   if (listaPromessas.length === 0) {
     return (
-      <div style={{ padding: '50px', textAlign: 'center', fontFamily: 'sans-serif' }}>
-        <h2>⏳ Carregando o Motor Analítico do PACTO...</h2>
+      <div style={{ padding: '60px', textAlign: 'center', fontFamily: 'sans-serif', color: '#475569' }}>
+        <h2>⏳ Carregando o Motor Analítico Refinado do PACTO...</h2>
       </div>
     );
   }
 
-  // =====================================================================
-  // TELA PRINCIPAL (Painel Web)
-  // =====================================================================
   return (
-    <div style={{ padding: '40px', fontFamily: 'sans-serif', backgroundColor: '#F5F5F5', minHeight: '100vh' }}>
+    <div style={{ padding: '40px 20px', fontFamily: 'sans-serif', backgroundColor: '#F8FAFC', minHeight: '100vh', maxWidth: '1200px', margin: '0 auto' }}>
       
-      <div style={{ backgroundColor: '#004A8D', color: 'white', padding: '20px', borderRadius: '8px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px' }}>
+      {/* Cabeçalho refinado */}
+      <div style={{ backgroundColor: '#0F172A', color: 'white', padding: '30px', borderRadius: '12px', marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '20px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}>
         <div>
-          <h1>🏛️ PACTO Web</h1>
-          <p>Promessas. Dinheiro. Resultados.</p>
+          <h1 style={{ fontSize: '28px', marginBottom: '8px' }}>🏛️ PACTO Web</h1>
+          <p style={{ color: '#94A3B8', fontSize: '15px' }}>Promessas. Dinheiro. Resultados.</p>
         </div>
-        
-        <button 
-          onClick={exportarParaCSV}
-          style={{
-            backgroundColor: '#10B981', color: 'white', border: 'none', padding: '12px 20px', borderRadius: '8px', 
-            fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-          }}
-        >
+        <button onClick={exportarParaCSV} style={{ backgroundColor: '#059669', color: 'white', border: 'none', padding: '12px 20px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>
           📥 Baixar Relatório (CSV)
         </button>
       </div>
 
-      {/* PAINEL DE INDICADORES DE DESEMPENHO (NOVO - OPÇÃO B) */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '15px', marginBottom: '30px' }}>
-        <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)', borderLeft: '4px solid #004A8D' }}>
-          <p style={{ color: '#666', fontSize: '14px', marginBottom: '5px' }}>Total de Metas Monitoradas</p>
-          <h2 style={{ color: '#004A8D', fontSize: '28px' }}>{totalPromessas}</h2>
+      {/* Painel de Indicadores Globais integrados */}
+      {indicadoresGlobais && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px', marginBottom: '24px' }}>
+          <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', borderLeft: '5px solid #0F172A' }}>
+            <p style={{ color: '#64748B', fontSize: '13px', textTransform: 'uppercase', fontWeight: 'bold' }}>Total de Metas</p>
+            <h2 style={{ color: '#0F172A', fontSize: '32px', marginTop: '6px' }}>{indicadoresGlobais.total_metas}</h2>
+          </div>
+          <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', borderLeft: '5px solid #059669' }}>
+            <p style={{ color: '#64748B', fontSize: '13px', textTransform: 'uppercase', fontWeight: 'bold' }}>Média de Execução</p>
+            <h2 style={{ color: '#059669', fontSize: '32px', marginTop: '6px' }}>{indicadoresGlobais.media_execucao_global}</h2>
+          </div>
+          <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', borderLeft: '5px solid #DC2626' }}>
+            <p style={{ color: '#64748B', fontSize: '13px', textTransform: 'uppercase', fontWeight: 'bold' }}>Metas Atrasadas</p>
+            <h2 style={{ color: '#DC2626', fontSize: '32px', marginTop: '6px' }}>{indicadoresGlobais.total_atrasadas}</h2>
+          </div>
         </div>
+      )}
 
-        <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)', borderLeft: '4px solid #10B981' }}>
-          <p style={{ color: '#666', fontSize: '14px', marginBottom: '5px' }}>Média de Execução Global</p>
-          <h2 style={{ color: '#10B981', fontSize: '28px' }}>{mediaExecucaoGlobal}%</h2>
-        </div>
-
-        <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)', borderLeft: '4px solid #D97706' }}>
-          <p style={{ color: '#666', fontSize: '14px', marginBottom: '5px' }}>Em Andamento</p>
-          <h2 style={{ color: '#D97706', fontSize: '28px' }}>{totalEmAndamento}</h2>
-        </div>
-
-        <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)', borderLeft: '4px solid #EF4444' }}>
-          <p style={{ color: '#666', fontSize: '14px', marginBottom: '5px' }}>Atrasadas / Alertas</p>
-          <h2 style={{ color: '#EF4444', fontSize: '28px' }}>{totalAtrasadas}</h2>
-        </div>
-      </div>
-
-      {/* FILTROS POR ÁREA */}
+      {/* Filtros de Área */}
       <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
         {['Todas', 'Saúde', 'Segurança Pública', 'Infraestrutura'].map((area) => (
-          <button 
-            key={area} onClick={() => setAreaSelecionada(area)}
-            style={{
-              padding: '10px 20px', borderRadius: '20px', border: 'none', cursor: 'pointer', fontWeight: 'bold',
-              backgroundColor: areaSelecionada === area ? '#004A8D' : '#E5E7EB',
-              color: areaSelecionada === area ? 'white' : '#374151'
-            }}
-          >
+          <button key={area} onClick={() => setAreaSelecionada(area)} style={{ padding: '10px 20px', borderRadius: '24px', border: 'none', cursor: 'pointer', fontWeight: 'bold', fontSize: '14px', backgroundColor: areaSelecionada === area ? '#0F172A' : '#E2E8F0', color: areaSelecionada === area ? 'white' : '#475569', transition: 'all 0.2s' }}>
             {area}
           </button>
         ))}
       </div>
 
-      {/* BARRA DE PESQUISA */}
-      <input 
-        type="text" placeholder="Pesquise por uma promessa..."
-        value={textoPesquisa} onChange={(e) => setTextoPesquisa(e.target.value)}
-        style={{ width: '100%', padding: '15px', fontSize: '16px', borderRadius: '8px', border: '1px solid #CCC', marginBottom: '30px' }}
-      />
+      {/* Barra de Pesquisa */}
+      <input type="text" placeholder="🔍 Pesquise por uma promessa específica..." value={textoPesquisa} onChange={(e) => setTextoPesquisa(e.target.value)} style={{ width: '100%', padding: '16px', fontSize: '16px', borderRadius: '10px', border: '1px solid #CBD5E1', marginBottom: '24px', backgroundColor: 'white', outline: 'none' }} />
 
-      {/* LISTAGEM DE CARTÕES */}
+      {/* Listagem de Cartões Refinados */}
       {promessasFiltradas.map((dados) => (
-        <div key={dados.id} style={{ backgroundColor: 'white', padding: '30px', borderRadius: '8px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)', marginBottom: '20px' }}>
+        <div key={dados.id} style={{ backgroundColor: 'white', padding: '30px', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', marginBottom: '24px', border: '1px solid #E2E8F0' }}>
           
-          <h2 style={{ color: '#004A8D', textTransform: 'uppercase', fontSize: '14px' }}>{dados.entidade} | {dados.area}</h2>
-          <h1 style={{ color: '#333', fontSize: '24px', marginBottom: '10px' }}>{dados.promessa}</h1>
-          
-          <span style={{ 
-            backgroundColor: dados.status_geral === 'ATRASADA' ? '#EF4444' : dados.status_geral === 'CONCLUÍDA' ? '#10B981' : '#D97706', 
-            color: 'white', padding: '5px 10px', borderRadius: '4px', fontWeight: 'bold' 
-          }}>
-            Status: {dados.status_geral}
-          </span>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap', gap: '10px' }}>
+            <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#0F172A', backgroundColor: '#F1F5F9', padding: '6px 12px', borderRadius: '6px', textTransform: 'uppercase' }}>
+              {dados.entidade} • {dados.area}
+            </span>
+            <span style={{ backgroundColor: dados.status_geral === 'ATRASADA' ? '#FEE2E2' : '#DCFCE7', color: dados.status_geral === 'ATRASADA' ? '#DC2626' : '#16A34A', padding: '6px 12px', borderRadius: '6px', fontWeight: 'bold', fontSize: '12px' }}>
+              {dados.status_geral}
+            </span>
+          </div>
+
+          <h2 style={{ color: '#1E293B', fontSize: '20px', marginBottom: '16px', lineHeight: '1.4' }}>{dados.promessa}</h2>
 
           {dados.alerta_analitico && (
-            <div style={{ backgroundColor: dados.alerta_analitico.corFundo, color: dados.alerta_analitico.corTexto, padding: '12px', borderRadius: '6px', marginTop: '15px', border: `1px solid ${dados.alerta_analitico.corTexto}`, fontWeight: 'bold' }}>
+            <div style={{ backgroundColor: dados.alerta_analitico.corFundo, color: dados.alerta_analitico.corTexto, padding: '14px', borderRadius: '8px', marginBottom: '20px', border: `1px solid ${dados.alerta_analitico.corTexto}`, fontSize: '14px', fontWeight: 'bold' }}>
               {dados.alerta_analitico.mensagem}
             </div>
           )}
 
-          <div style={{ marginTop: '30px', display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
-            <div style={{ flex: '1', minWidth: '200px', backgroundColor: '#F9FAFB', padding: '15px', borderRadius: '6px', borderLeft: '4px solid #3B82F6' }}>
-              <h3 style={{ fontSize: '16px', color: '#555', marginBottom: '10px' }}>📋 Planejamento</h3>
-              <p><strong>Origem:</strong> {dados.fases_evidencia.planejamento.origem}</p>
-              <p><strong>Meta:</strong> {dados.fases_evidencia.planejamento.meta_estipulada}</p>
+          {/* Grid de Evidências */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '16px' }}>
+            <div style={{ backgroundColor: '#F8FAFC', padding: '16px', borderRadius: '8px', borderLeft: '4px solid #3B82F6' }}>
+              <h3 style={{ fontSize: '14px', color: '#334155', marginBottom: '8px', fontWeight: 'bold' }}>📋 Planejamento</h3>
+              <p style={{ fontSize: '13px', color: '#64748B', marginBottom: '4px' }}><strong>Origem:</strong> {dados.fases_evidencia.planejamento.origem}</p>
+              <p style={{ fontSize: '13px', color: '#64748B' }}><strong>Meta:</strong> {dados.fases_evidencia.planejamento.meta_estipulada}</p>
             </div>
             
-            <div style={{ flex: '1', minWidth: '200px', backgroundColor: '#F9FAFB', padding: '15px', borderRadius: '6px', borderLeft: '4px solid #10B981' }}>
-              <h3 style={{ fontSize: '16px', color: '#555', marginBottom: '10px' }}>💰 Orçamento</h3>
-              <p><strong>Dotação:</strong> {dados.fases_evidencia.orcamento.dotacao_atualizada}</p>
-              <p><strong>Empenhado:</strong> {dados.fases_evidencia.orcamento.empenhado}</p>
+            <div style={{ backgroundColor: '#F8FAFC', padding: '16px', borderRadius: '8px', borderLeft: '4px solid #059669' }}>
+              <h3 style={{ fontSize: '14px', color: '#334155', marginBottom: '8px', fontWeight: 'bold' }}>💰 Orçamento</h3>
+              <p style={{ fontSize: '13px', color: '#64748B', marginBottom: '4px' }}><strong>Dotação:</strong> {dados.fases_evidencia.orcamento.dotacao_atualizada}</p>
+              <p style={{ fontSize: '13px', color: '#64748B' }}><strong>Empenhado:</strong> {dados.fases_evidencia.orcamento.empenhado}</p>
             </div>
             
-            <div style={{ flex: '1', minWidth: '200px', backgroundColor: '#F9FAFB', padding: '15px', borderRadius: '6px', borderLeft: '8px solid #8B5CF6' }}>
-              <h3 style={{ fontSize: '16px', color: '#555', marginBottom: '10px' }}>✅ Resultado</h3>
-              <p><strong>Concluídas:</strong> {dados.fases_evidencia.execucao.obras_concluidas}</p>
+            <div style={{ backgroundColor: '#F8FAFC', padding: '16px', borderRadius: '8px', borderLeft: '4px solid #8B5CF6' }}>
+              <h3 style={{ fontSize: '14px', color: '#334155', marginBottom: '8px', fontWeight: 'bold' }}>✅ Resultado</h3>
+              <p style={{ fontSize: '13px', color: '#64748B', marginBottom: '8px' }}><strong>Concluídas:</strong> {dados.fases_evidencia.execucao.obras_concluidas}</p>
               
-              <div style={{ marginTop: '15px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
-                  <strong style={{ fontSize: '14px', color: '#333' }}>Execução Real</strong>
-                  <strong style={{ fontSize: '14px', color: '#10B981' }}>{dados.fases_evidencia.execucao.percentual_execucao}</strong>
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                  <span style={{ fontSize: '12px', color: '#475569', fontWeight: 'bold' }}>Execução Real</span>
+                  <span style={{ fontSize: '12px', color: '#059669', fontWeight: 'bold' }}>{dados.fases_evidencia.execucao.percentual_execucao}</span>
                 </div>
-                
-                <div style={{ width: '100%', backgroundColor: '#E5E7EB', borderRadius: '10px', height: '10px', overflow: 'hidden' }}>
-                  <div style={{ 
-                    height: '100%', backgroundColor: '#10B981', 
-                    width: dados.fases_evidencia.execucao.percentual_execucao, 
-                    transition: 'width 1s ease-in-out' 
-                  }} />
+                <div style={{ width: '100%', backgroundColor: '#E2E8F0', borderRadius: '6px', height: '8px', overflow: 'hidden' }}>
+                  <div style={{ height: '100%', backgroundColor: '#059669', width: dados.fases_evidencia.execucao.percentual_execucao }} />
                 </div>
               </div>
-
             </div>
           </div>
+
         </div>
       ))}
     </div>
