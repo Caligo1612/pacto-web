@@ -132,7 +132,7 @@ export default function Home() {
 
       {/* Filtros de Área */}
       <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
-        {['Todas', 'Saúde', 'Segurança Pública', 'Infraestrutura'].map((area) => (
+        {['Todas', 'Saúde', 'Segurança Pública', 'Infraestrutura', 'Educação', 'Mobilidade', 'Finanças Públicas'].map((area) => (
           <button key={area} onClick={() => setAreaSelecionada(area)} style={{ padding: '10px 20px', borderRadius: '24px', border: 'none', cursor: 'pointer', fontWeight: 'bold', fontSize: '14px', backgroundColor: areaSelecionada === area ? '#0F172A' : '#E2E8F0', color: areaSelecionada === area ? 'white' : '#475569', transition: 'all 0.2s' }}>
             {area}
           </button>
