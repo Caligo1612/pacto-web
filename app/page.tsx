@@ -25,6 +25,9 @@ export default function Home() {
       .catch((err) => console.log("Erro ao buscar indicadores:", err));
   }, []);
 
+  // Extrai dinamicamente a lista de todas as secretarias cadastradas no banco de dados
+  const secretariasDisponiveis = ['Todas', ...Array.from(new Set(listaPromessas.map(item => item.area)))];
+
   const promessasFiltradas = listaPromessas.filter((item) => {
     const combinaTexto = item.promessa.toLowerCase().includes(textoPesquisa.toLowerCase());
     const combinaArea = areaSelecionada === 'Todas' || item.area === areaSelecionada;
@@ -32,7 +35,7 @@ export default function Home() {
   });
 
   const exportarParaCSV = () => {
-    let csvContent = "data:text/csv;charset=utf-8,ID;Entidade;Área;Promessa;Status;Orçamento Atualizado;Percentual Execução\n";
+    let csvContent = "data:text/csv;charset=utf-8,ID;Entidade;Secretaria;Promessa;Status;Orçamento Atualizado;Percentual Execução\n";
     promessasFiltradas.forEach((item) => {
       const linha = `"${item.id}";"${item.entidade}";"${item.area}";"${item.promessa}";"${item.status_geral}";"${item.fases_evidencia.orcamento.dotacao_atualizada}";"${item.fases_evidencia.execucao.percentual_execucao}"`;
       csvContent += linha + "\r\n";
@@ -40,7 +43,7 @@ export default function Home() {
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `relatorio_pacto_${areaSelecionada.toLowerCase()}.csv`);
+    link.setAttribute("download", `relatorio_pacto_${areaSelecionada.toLowerCase().replace(/ /g, '_')}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -67,11 +70,11 @@ export default function Home() {
           <h1 style={{ color: '#0F172A', marginBottom: '20px', textAlign: 'center', fontSize: '24px' }}>🏛️ Bem-vindo ao PACTO</h1>
           <h2 style={{ fontSize: '16px', color: '#334155', marginBottom: '8px' }}>Propósito e Valores</h2>
           <p style={{ color: '#475569', marginBottom: '16px', lineHeight: '1.6', fontSize: '14px' }}>
-            O PACTO é uma ferramenta de inteligência cívica apartidária e educativa. Nossa missão é transformar dados públicos em informações compreensíveis.
+            O PACTO é uma ferramenta de inteligência cívica apartidária e educativa para transformar dados de todas as secretarias em informações compreensíveis.
           </p>
           <h2 style={{ fontSize: '16px', color: '#334155', marginBottom: '8px' }}>Origem dos Dados e Direitos</h2>
           <p style={{ color: '#475569', marginBottom: '24px', lineHeight: '1.6', fontSize: '14px' }}>
-            Informações extraídas de portais governamentais oficiais. Código e design protegidos por direitos autorais.
+            Informações oficiais extraídas de portais do governo. Código e design protegidos por direitos autorais.
           </p>
           <div style={{ marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '12px', backgroundColor: '#F8FAFC', padding: '16px', borderRadius: '10px', border: '1px solid #E2E8F0' }}>
             <input type="checkbox" id="aceito" checked={caixaMarcada} onChange={(e) => setCaixaMarcada(e.target.checked)} style={{ width: '20px', height: '20px', cursor: 'pointer' }} />
@@ -93,7 +96,7 @@ export default function Home() {
   if (listaPromessas.length === 0) {
     return (
       <div style={{ padding: '60px', textAlign: 'center', fontFamily: 'sans-serif', color: '#475569' }}>
-        <h2>⏳ Carregando o Motor Analítico Refinado do PACTO...</h2>
+        <h2>⏳ Carregando as 24 Secretarias do Governo no PACTO...</h2>
       </div>
     );
   }
@@ -101,18 +104,18 @@ export default function Home() {
   return (
     <div style={{ padding: '40px 20px', fontFamily: 'sans-serif', backgroundColor: '#F8FAFC', minHeight: '100vh', maxWidth: '1200px', margin: '0 auto' }}>
       
-      {/* Cabeçalho refinado */}
+      {/* Cabeçalho */}
       <div style={{ backgroundColor: '#0F172A', color: 'white', padding: '30px', borderRadius: '12px', marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '20px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}>
         <div>
           <h1 style={{ fontSize: '28px', marginBottom: '8px' }}>🏛️ PACTO Web</h1>
-          <p style={{ color: '#94A3B8', fontSize: '15px' }}>Promessas. Dinheiro. Resultados.</p>
+          <p style={{ color: '#94A3B8', fontSize: '15px' }}>Promessas. Dinheiro. Resultados. (24 Secretarias)</p>
         </div>
         <button onClick={exportarParaCSV} style={{ backgroundColor: '#059669', color: 'white', border: 'none', padding: '12px 20px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>
           📥 Baixar Relatório (CSV)
         </button>
       </div>
 
-      {/* Painel de Indicadores Globais integrados */}
+      {/* Painel de Indicadores Globais */}
       {indicadoresGlobais && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px', marginBottom: '24px' }}>
           <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', borderLeft: '5px solid #0F172A' }}>
@@ -130,19 +133,29 @@ export default function Home() {
         </div>
       )}
 
-      {/* Filtros de Área */}
-      <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
-        {['Todas', 'Saúde', 'Segurança Pública', 'Infraestrutura', 'Educação', 'Mobilidade', 'Finanças Públicas'].map((area) => (
-          <button key={area} onClick={() => setAreaSelecionada(area)} style={{ padding: '10px 20px', borderRadius: '24px', border: 'none', cursor: 'pointer', fontWeight: 'bold', fontSize: '14px', backgroundColor: areaSelecionada === area ? '#0F172A' : '#E2E8F0', color: areaSelecionada === area ? 'white' : '#475569', transition: 'all 0.2s' }}>
-            {area}
-          </button>
-        ))}
+      {/* Seletor Dinâmico de Secretarias (Dropdown otimizado para as 24 pastas) */}
+      <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '12px', marginBottom: '24px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', border: '1px solid #E2E8F0' }}>
+        <label htmlFor="seletor-secretaria" style={{ display: 'block', fontWeight: 'bold', color: '#1E293B', marginBottom: '8px', fontSize: '14px' }}>
+          🏢 Filtrar por Secretaria do Governo:
+        </label>
+        <select 
+          id="seletor-secretaria"
+          value={areaSelecionada} 
+          onChange={(e) => setAreaSelecionada(e.target.value)}
+          style={{ width: '100%', padding: '14px', fontSize: '15px', borderRadius: '8px', border: '1px solid #CBD5E1', backgroundColor: '#F8FAFC', color: '#1E293B', fontWeight: 'bold', outline: 'none', cursor: 'pointer' }}
+        >
+          {secretariasDisponiveis.map(( secretaria ) => (
+            <option key={secretaria} value={secretaria}>
+              {secretaria === 'Todas' ? '📂 Todas as Secretarias do Estado' : secretaria}
+            </option>
+          ))}
+        </select>
       </div>
 
       {/* Barra de Pesquisa */}
       <input type="text" placeholder="🔍 Pesquise por uma promessa específica..." value={textoPesquisa} onChange={(e) => setTextoPesquisa(e.target.value)} style={{ width: '100%', padding: '16px', fontSize: '16px', borderRadius: '10px', border: '1px solid #CBD5E1', marginBottom: '24px', backgroundColor: 'white', outline: 'none' }} />
 
-      {/* Listagem de Cartões Refinados */}
+      {/* Listagem de Cartões */}
       {promessasFiltradas.map((dados) => (
         <div key={dados.id} style={{ backgroundColor: 'white', padding: '30px', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', marginBottom: '24px', border: '1px solid #E2E8F0' }}>
           
@@ -150,7 +163,7 @@ export default function Home() {
             <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#0F172A', backgroundColor: '#F1F5F9', padding: '6px 12px', borderRadius: '6px', textTransform: 'uppercase' }}>
               {dados.entidade} • {dados.area}
             </span>
-            <span style={{ backgroundColor: dados.status_geral === 'ATRASADA' ? '#FEE2E2' : '#DCFCE7', color: dados.status_geral === 'ATRASADA' ? '#DC2626' : '#16A34A', padding: '6px 12px', borderRadius: '6px', fontWeight: 'bold', fontSize: '12px' }}>
+            <span style={{ backgroundColor: dados.status_geral === 'ATRASADA' ? '#FEE2E2' : dados.status_geral === 'CONCLUÍDA' ? '#DCFCE7' : '#FEF3C7', color: dados.status_geral === 'ATRASADA' ? '#DC2626' : dados.status_geral === 'CONCLUÍDA' ? '#16A34A' : '#D97706', padding: '6px 12px', borderRadius: '6px', fontWeight: 'bold', fontSize: '12px' }}>
               {dados.status_geral}
             </span>
           </div>
@@ -177,7 +190,7 @@ export default function Home() {
               <p style={{ fontSize: '13px', color: '#64748B' }}><strong>Empenhado:</strong> {dados.fases_evidencia.orcamento.empenhado}</p>
             </div>
             
-            <div style={{ backgroundColor: '#F8FAFC', padding: '16px', borderRadius: '8px', borderLeft: '4px solid #8B5CF6' }}>
+            <div style={{ backgroundColor: '#F8FAFC', padding: '16px', borderRadius: '8px', borderLeft: '8px solid #8B5CF6' }}>
               <h3 style={{ fontSize: '14px', color: '#334155', marginBottom: '8px', fontWeight: 'bold' }}>✅ Resultado</h3>
               <p style={{ fontSize: '13px', color: '#64748B', marginBottom: '8px' }}><strong>Concluídas:</strong> {dados.fases_evidencia.execucao.obras_concluidas}</p>
               
